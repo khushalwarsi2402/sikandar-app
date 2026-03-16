@@ -1,26 +1,36 @@
 <ion-header>
-  <ion-toolbar color="danger">
-    <ion-title>Sikandar Raw Mutton</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>Sikandar Inventory</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content class="ion-padding">
-  <h2>Welcome to the fresh meat market!</h2>
-  <p>Our database is running, our server is online, and our app is alive.</p>
-  
-  <ion-button expand="block" color="dark" (click)="loadInventory()">
-    View Today's Inventory
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Add New Stock</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-input #nameInput label="Item Name:" placeholder="e.g. Chicken Tikka"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input #priceInput type="number" label="Price (₹):" placeholder="e.g. 350"></ion-input>
+      </ion-item>
+      <ion-button expand="block" color="success" class="ion-margin-top" (click)="addItem(nameInput.value, priceInput.value)">
+        Save Item
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+  <ion-button expand="block" class="ion-margin-top" (click)="loadInventory()">
+    Load Inventory
   </ion-button>
-  <div *ngIf="loading" class="ion-padding">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading inventory…</p>
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+  <ion-spinner name="crescent"></ion-spinner>
   </div>
-
-  <ion-list *ngIf="inventory && inventory.length > 0">
-    <ion-item *ngFor="let meat of inventory; let i = index; trackBy: trackByIndex">
+  <ion-list *ngIf="!loading && inventory.length > 0" class="ion-margin-top">
+    <ion-item *ngFor="let item of inventory; trackBy: trackByIndex">
       <ion-label>
-        <h3>{{ meat.name || 'Mutton Cut' }}</h3>
-        <p>Price: ₹{{ meat.price || '0' }} / kg</p>
+        <h2>{{ item.name }}</h2>
+        <p>₹{{ item.price }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

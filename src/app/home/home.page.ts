@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
 import { NgIf, NgForOf } from '@angular/common';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonList, IonItem, IonLabel, IonSpinner } from '@ionic/angular/standalone';
+import { HttpClient } from '@angular/common/http'; 
+import { 
+  IonHeader, IonToolbar, IonTitle, IonContent, 
+  IonButton, IonList, IonItem, IonLabel, IonSpinner,
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput 
+} from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { InventoryService } from '../services/inventory.service';
 import { finalize } from 'rxjs/operators';
 
-// 1. Define an interface for type safety
 export interface InventoryItem {
   id?: string | number;
   name: string;
@@ -17,44 +21,71 @@ export interface InventoryItem {
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonList, IonItem, IonLabel, IonSpinner],
+  imports: [
+    NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent, 
+    IonButton, IonList, IonItem, IonLabel, IonSpinner,
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput 
+  ],
 })
 export class HomePage {
-  // 2. Apply the interface to your array
   inventory: InventoryItem[] = []; 
   loading = false;
+  
+  // YOUR LIVE API URL
+  private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
-  constructor(private inventorySvc: InventoryService, private toastCtrl: ToastController) {}
+  constructor(
+    private inventorySvc: InventoryService, 
+    private toastCtrl: ToastController,
+    private http: HttpClient 
+  ) {}
 
   loadInventory() {
     this.loading = true;
     
-    this.inventorySvc.getInventory()
+    // Now fetching from the live Render server
+    this.http.get<InventoryItem[]>(this.apiUrl)
       .pipe(
-        // 3. finalize runs whether the request succeeds or fails
         finalize(() => this.loading = false) 
       )
       .subscribe({
         next: (data: InventoryItem[]) => {
           this.inventory = data || [];
-          console.log('Data loaded!', this.inventory);
+          console.log('Global data loaded!', this.inventory);
         },
         error: (err) => {
-          console.error('Error fetching data:', err);
-          // Fall back to demo data
-          this.inventory = [
-            { name: 'Shoulder Chops', price: 420 },
-            { name: 'Leg Roast', price: 390 },
-            { name: 'Rib Cut', price: 480 }
-          ];
-          console.warn('Using demo inventory due to fetch error.');
-          this.showToast('Could not connect to the Node.js server — showing demo data.');
+          console.error('Error fetching live data:', err);
+          this.showToast('Could not connect to the live server.');
         }
       });
   }
 
+  addItem(name: string | number | null | undefined, price: string | number | null | undefined) {
+    if (!name || !price) {
+      this.showToast('Please enter both a name and a price!');
+      return;
+    }
+
+    const newItem = { 
+      name: String(name), 
+      price: Number(price) 
+    };
+
+    // Sending data to the live Render server
+    this.http.post(this.apiUrl, newItem).subscribe({
+      next: (response: any) => {
+        this.showToast('Item saved to the cloud!');
+        this.loadInventory(); 
+      },
+      error: (error) => {
+        console.error('Error adding item:', error);
+        this.showToast('Failed to save to the cloud.');
+      }
+    });
+  }
+
   private async showToast(message: string, duration = 3000) {
-    const t = await this.toastCtrl.create({
+    const t = await await this.toastCtrl.create({
       message,
       duration,
       position: 'bottom'
