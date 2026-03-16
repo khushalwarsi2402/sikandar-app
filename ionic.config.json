@@ -1,0 +1,7 @@
+{
+  "name": "sikandar-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

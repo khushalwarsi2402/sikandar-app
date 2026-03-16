@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar color="danger">
+    <ion-title>Sikandar Raw Mutton</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2>Welcome to the fresh meat market!</h2>
+  <p>Our database is running, our server is online, and our app is alive.</p>
+  
+  <ion-button expand="block" color="dark" (click)="loadInventory()">
+    View Today's Inventory
+  </ion-button>
+  <div *ngIf="loading" class="ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading inventory…</p>
+  </div>
+
+  <ion-list *ngIf="inventory && inventory.length > 0">
+    <ion-item *ngFor="let meat of inventory; let i = index; trackBy: trackByIndex">
+      <ion-label>
+        <h3>{{ meat.name || 'Mutton Cut' }}</h3>
+        <p>Price: ₹{{ meat.price || '0' }} / kg</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
