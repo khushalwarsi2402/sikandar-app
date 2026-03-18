@@ -84,8 +84,8 @@ export class HomePage {
     });
   }
 
-  private async showToast(message: string, duration = 3000) {
-    const t = await await this.toastCtrl.create({
+ private async showToast(message: string, duration = 3000) {
+    const t = await this.toastCtrl.create({
       message,
       duration,
       position: 'bottom'
