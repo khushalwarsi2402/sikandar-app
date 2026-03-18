@@ -9,7 +9,7 @@ import { apiConfig } from '../../environments/environment';
 })
 export class InventoryService {
   // Use environment apiConfig so tests and environment settings stay consistent
-  private apiUrl = `${apiConfig.apiUrl}/mutton`;
+ private apiUrl = `${apiConfig.apiUrl}/api/inventory`;
 
   constructor(private http: HttpClient) {}
 
