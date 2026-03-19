@@ -1,20 +1,23 @@
 import { Component } from '@angular/core';
 import { NgIf, NgForOf } from '@angular/common';
-import { HttpClient } from '@angular/common/http'; 
+// 1. Make sure the new components are imported here:
+// 1. Core Angular HTTP tool
+import { HttpClient } from '@angular/common/http';
+
+// 2. Ionic UI tools
+import { ToastController } from '@ionic/angular/standalone'; 
+
+// 3. RxJS tools (for that 'finalize' operator in your code)
+import { finalize } from 'rxjs/operators';
+
+// 4. Your custom service from the services folder!
+import { InventoryService } from '../services/inventory.service';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
   IonButton, IonList, IonItem, IonLabel, IonSpinner,
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput 
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
+  IonAvatar, IonBadge, IonListHeader, IonIcon, IonText // <-- Added here
 } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular';
-import { InventoryService } from '../services/inventory.service';
-import { finalize } from 'rxjs/operators';
-
-export interface InventoryItem {
-  id?: string | number;
-  name: string;
-  price: number;
-}
 
 @Component({
   selector: 'app-home',
@@ -24,11 +27,12 @@ export interface InventoryItem {
   imports: [
     NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent, 
     IonButton, IonList, IonItem, IonLabel, IonSpinner,
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput 
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
+    IonAvatar, IonBadge, IonListHeader, IonIcon, IonText // <-- And added here
   ],
 })
 export class HomePage {
-  inventory: InventoryItem[] = []; 
+  inventory: any[] = []; 
   loading = false;
   
   // YOUR LIVE API URL
@@ -44,12 +48,12 @@ export class HomePage {
     this.loading = true;
     
     // Now fetching from the live Render server
-    this.http.get<InventoryItem[]>(this.apiUrl)
+    this.http.get<any[]>(this.apiUrl)
       .pipe(
         finalize(() => this.loading = false) 
       )
       .subscribe({
-        next: (data: InventoryItem[]) => {
+        next: (data: any[]) => {
           this.inventory = data || [];
           console.log('Global data loaded!', this.inventory);
         },
@@ -93,7 +97,7 @@ export class HomePage {
     await t.present();
   }
 
-  trackByIndex(_: number, item: InventoryItem) {
+  trackByIndex(_: number, item: any) {
     return item?.id ?? item?.name ?? _;
   }
 }
