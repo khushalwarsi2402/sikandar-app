@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NgIf, NgForOf } from '@angular/common';
-// 1. Make sure the new components are imported here:
+
 // 1. Core Angular HTTP tool
 import { HttpClient } from '@angular/common/http';
 
@@ -12,11 +12,12 @@ import { finalize } from 'rxjs/operators';
 
 // 4. Your custom service from the services folder!
 import { InventoryService } from '../services/inventory.service';
+
+// ✨ CLEANED UP: Removed IonSpinner, IonCard, IonInput, etc.
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
-  IonButton, IonList, IonItem, IonLabel, IonSpinner,
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
-  IonAvatar, IonBadge, IonListHeader, IonIcon, IonText // <-- Added here
+  IonButton, IonList, IonItem, IonLabel, 
+  IonAvatar, IonBadge, IonListHeader, IonIcon, IonText 
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -24,11 +25,11 @@ import {
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
+  // ✨ CLEANED UP: Removed them from this list too!
   imports: [
     NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent, 
-    IonButton, IonList, IonItem, IonLabel, IonSpinner,
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
-    IonAvatar, IonBadge, IonListHeader, IonIcon, IonText // <-- And added here
+    IonButton, IonList, IonItem, IonLabel, 
+    IonAvatar, IonBadge, IonListHeader, IonIcon, IonText 
   ],
 })
 export class HomePage {
