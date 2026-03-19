@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { InventoryItem } from '../home/home.page'; // Adjust path if you put the interface in a separate models file
 import { apiConfig } from '../../environments/environment';
 
 @Injectable({
@@ -13,8 +12,8 @@ export class InventoryService {
 
   constructor(private http: HttpClient) {}
 
-  getInventory(): Observable<InventoryItem[]> {
-    return this.http.get<InventoryItem[]>(this.apiUrl).pipe(
+  getInventory(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl).pipe(
       catchError((error) => {
         // Log the error for debugging, then pass it down to the component
         console.error('Service error:', error);
