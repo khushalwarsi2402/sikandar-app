@@ -1,37 +1,40 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Sikandar Inventory</ion-title>
+    <ion-title>Sikandar Fresh Meats</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content class="ion-padding">
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Add New Stock</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item>
-        <ion-input #nameInput label="Item Name:" placeholder="e.g. Chicken Tikka"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input #priceInput type="number" label="Price (₹):" placeholder="e.g. 350"></ion-input>
-      </ion-item>
-      <ion-button expand="block" color="success" class="ion-margin-top" (click)="addItem(nameInput.value, priceInput.value)">
-        Save Item
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-  <ion-button expand="block" class="ion-margin-top" (click)="loadInventory()">
-    Load Inventory
+  <!-- A professional block button -->
+  <ion-button expand="block" (click)="loadInventory()" class="ion-margin-bottom">
+    <ion-icon slot="start" name="sync-outline"></ion-icon>
+    Load Live Inventory
   </ion-button>
-  <div *ngIf="loading" class="ion-text-center ion-padding">
-  <ion-spinner name="crescent"></ion-spinner>
-  </div>
-  <ion-list *ngIf="!loading && inventory.length > 0" class="ion-margin-top">
-    <ion-item *ngFor="let item of inventory; trackBy: trackByIndex">
+
+  <!-- This list only shows up AFTER the data arrives -->
+  <ion-list *ngIf="inventory && inventory.length > 0">
+    <ion-list-header>
+      <ion-label>Available Today</ion-label>
+    </ion-list-header>
+
+    <!-- The Loop: Creates a styled row for every item -->
+    <ion-item *ngFor="let item of inventory">
+      <ion-avatar slot="start">
+        <img alt="Item Avatar" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+      </ion-avatar>
       <ion-label>
         <h2>{{ item.name }}</h2>
-        <p>₹{{ item.price }}</p>
+        <p>Item #{{ item.id }}</p>
       </ion-label>
+      <!-- A slick badge for the price -->
+      <ion-badge slot="end" color="success">₹{{ item.price }}</ion-badge>
     </ion-item>
   </ion-list>
+
+  <!-- A message if the list is empty -->
+  <ion-text color="medium" *ngIf="inventory.length === 0">
+  <div class="ion-text-center ion-padding">
+    <p>Click the button to load today's fresh inventory.</p>
+  </div>
+</ion-text>
 </ion-content>
