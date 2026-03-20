@@ -7,17 +7,18 @@ import { HttpClient } from '@angular/common/http';
 // 2. Ionic UI tools
 import { ToastController } from '@ionic/angular/standalone'; 
 
-// 3. RxJS tools (for that 'finalize' operator in your code)
+// 3. RxJS tools
 import { finalize } from 'rxjs/operators';
 
-// 4. Your custom service from the services folder!
+// 4. Your custom service
 import { InventoryService } from '../services/inventory.service';
 
-// ✨ CLEANED UP: Removed IonSpinner, IonCard, IonInput, etc.
+// ✅ RESTORED: Added the UI components needed for the "Add Stock" form
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
   IonButton, IonList, IonItem, IonLabel, 
-  IonAvatar, IonBadge, IonListHeader, IonIcon, IonText 
+  IonAvatar, IonBadge, IonListHeader, IonIcon, IonText,
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput 
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -25,18 +26,19 @@ import {
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  // ✨ CLEANED UP: Removed them from this list too!
+  // ✅ RESTORED: Added to the imports array so the HTML recognizes them
   imports: [
     NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent, 
     IonButton, IonList, IonItem, IonLabel, 
-    IonAvatar, IonBadge, IonListHeader, IonIcon, IonText 
+    IonAvatar, IonBadge, IonListHeader, IonIcon, IonText,
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput
   ],
 })
 export class HomePage {
   inventory: any[] = []; 
   loading = false;
   
-  // YOUR LIVE API URL
+  // YOUR LIVE API URL (Render + MongoDB)
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
   constructor(
@@ -45,18 +47,19 @@ export class HomePage {
     private http: HttpClient 
   ) {}
 
+  // Fetch data from MongoDB via Render
   loadInventory() {
     this.loading = true;
     
-    // Now fetching from the live Render server
     this.http.get<any[]>(this.apiUrl)
       .pipe(
         finalize(() => this.loading = false) 
       )
       .subscribe({
         next: (data: any[]) => {
+          // MongoDB results usually come in an array
           this.inventory = data || [];
-          console.log('Global data loaded!', this.inventory);
+          console.log('Database data loaded!', this.inventory);
         },
         error: (err) => {
           console.error('Error fetching live data:', err);
@@ -65,7 +68,8 @@ export class HomePage {
       });
   }
 
-  addItem(name: string | number | null | undefined, price: string | number | null | undefined) {
+  // Save new item to MongoDB via Render
+  addItem(name: any, price: any) {
     if (!name || !price) {
       this.showToast('Please enter both a name and a price!');
       return;
@@ -76,11 +80,10 @@ export class HomePage {
       price: Number(price) 
     };
 
-    // Sending data to the live Render server
     this.http.post(this.apiUrl, newItem).subscribe({
-      next: (response: any) => {
-        this.showToast('Item saved to the cloud!');
-        this.loadInventory(); 
+      next: () => {
+        this.showToast('Item saved to MongoDB!');
+        this.loadInventory(); // Refresh the list automatically
       },
       error: (error) => {
         console.error('Error adding item:', error);
@@ -89,7 +92,7 @@ export class HomePage {
     });
   }
 
- private async showToast(message: string, duration = 3000) {
+  private async showToast(message: string, duration = 3000) {
     const t = await this.toastCtrl.create({
       message,
       duration,
@@ -98,7 +101,8 @@ export class HomePage {
     await t.present();
   }
 
+  // Helper for smooth list rendering
   trackByIndex(_: number, item: any) {
-    return item?.id ?? item?.name ?? _;
+    return item?._id ?? item?.name ?? _;
   }
 }
