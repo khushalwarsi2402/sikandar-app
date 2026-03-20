@@ -1,35 +1,52 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose'); // 1. Added Mongoose
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable CORS so your Ionic app can fetch data without security errors
 app.use(cors());
-
-// Parse incoming JSON requests
 app.use(express.json());
 
-// The actual data we want to send to the frontend
-// Notice I used different items/prices than your demo data so you know it's working!
-const inventoryData = [
-  { id: 1, name: 'Premium Mutton Curry Cut', price: 650 },
-  { id: 2, name: 'Chicken Breast Boneless', price: 280 },
-  { id: 3, name: 'Fresh Salmon Fillet', price: 950 },
-  { id: 4, name: 'Mutton Mince (Keema)', price: 700 }
-];
+// 2. YOUR REAL DATABASE CONNECTION
+const MONGODB_URI = "mongodb+srv://khushalwarsi475:Mongodb098@cluster0.w7fb35r.mongodb.net/sikandar_meats?retryWrites=true&w=majority&appName=Cluster0";
 
-// The endpoint your InventoryService is looking for
-app.get('/api/inventory', (req, res) => {
-  console.log('Frontend requested the inventory data!');
-  
-  // We can add a fake 1-second delay so you can actually see your Ionic loading spinner work
-  setTimeout(() => {
-    res.json(inventoryData);
-  }, 1000);
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB Atlas (Mumbai)'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// 3. DEFINE THE DATA MODEL
+const itemSchema = new mongoose.Schema({
+  name: String,
+  price: Number
+});
+const Item = mongoose.model('Item', itemSchema);
+
+// 4. UPDATED ROUTES
+// GET items from the real database
+app.get('/api/inventory', async (req, res) => {
+  try {
+    const items = await Item.find();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch data" });
+  }
 });
 
-// Start the server
+// POST a new item to the real database
+app.post('/api/inventory', async (req, res) => {
+  try {
+    const newItem = new Item({
+      name: req.body.name,
+      price: req.body.price
+    });
+    await newItem.save();
+    res.status(201).json(newItem);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save item" });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`Backend API is running at http://localhost:${PORT}`);
+  console.log(`Backend API is live and connected to MongoDB!`);
 });
