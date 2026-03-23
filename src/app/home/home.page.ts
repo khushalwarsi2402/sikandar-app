@@ -84,9 +84,19 @@ export class HomePage {
   }
 
   addItem(name: any, price: any) {
-    if (!name || !price) return this.showToast('Please enter name and price!');
-    const newItem = { name: String(name), price: Number(price) };
+    // 1. We split this into two lines so TypeScript doesn't get confused by the "Promise"
+    if (!name || !price) {
+      this.showToast('Please enter name and price!');
+      return; 
+    }
+
+    // 2. Format the data for MongoDB
+    const newItem = { 
+      name: String(name), 
+      price: Number(price) 
+    };
     
+    // 3. Send it to the cloud
     this.http.post(this.apiUrl, newItem).subscribe({
       next: () => {
         this.showToast('Item saved!');
@@ -95,7 +105,6 @@ export class HomePage {
       error: () => this.showToast('Failed to save.')
     });
   }
-
   deleteItem(id: string) {
     if (!id) return;
     if (!confirm('Are you sure you want to delete this item?')) return;
