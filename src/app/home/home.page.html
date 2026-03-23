@@ -1,12 +1,20 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Bismillah Fresh Meats</ion-title>
+    
+    <ion-buttons slot="end">
+      <ion-button (click)="adminLogin()">
+        <ion-icon slot="icon-only" name="lock-closed-outline" *ngIf="!isAdmin"></ion-icon>
+        <ion-icon slot="icon-only" name="lock-open-outline" *ngIf="isAdmin"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   
-  <ion-card class="ion-margin-bottom">
+  <ion-card class="ion-margin-bottom" *ngIf="isAdmin">
     <ion-card-header>
       <ion-card-title>Update Stock</ion-card-title>
     </ion-card-header>
@@ -30,7 +38,7 @@
     </ion-card-content>
   </ion-card>
 
-  <hr class="ion-margin-vertical" />
+  <hr class="ion-margin-vertical" *ngIf="isAdmin" />
 
   <ion-button expand="block" fill="outline" (click)="loadInventory()" class="ion-margin-bottom">
     <ion-icon slot="start" name="sync-outline"></ion-icon>
@@ -46,15 +54,6 @@
       <ion-avatar slot="start">
         <img alt="Meat" src="https://cdn-icons-png.flaticon.com/512/1046/1046769.png" />
       </ion-avatar>
-      <ion-label>
-        <h2 class="item-title">{{ $any(item).name }}</h2>
-        <p>Fresh Stock</p>
-      </ion-label>
-      <ion-badge slot="end" color="success" class="price-badge">₹{{ $any(item).price }}</ion-badge>
-      <ion-item *ngFor="let item of inventory; trackBy: trackByIndex">
-      <ion-avatar slot="start">
-        <img alt="Meat" src="https://cdn-icons-png.flaticon.com/512/1046/1046769.png" />
-      </ion-avatar>
       
       <ion-label>
         <h2 class="item-title">{{ $any(item).name }}</h2>
@@ -63,16 +62,15 @@
       
       <ion-badge slot="end" color="success" class="price-badge">₹{{ $any(item).price }}</ion-badge>
       
-      <ion-button fill="clear" color="danger" slot="end" (click)="deleteItem($any(item)._id)">
+      <ion-button fill="clear" color="danger" slot="end" (click)="deleteItem($any(item)._id)" *ngIf="isAdmin">
         <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
       </ion-button>
-    </ion-item>
     </ion-item>
   </ion-list>
 
   <div class="ion-text-center ion-padding" *ngIf="inventory.length === 0">
     <ion-text color="medium">
-      <p>No items found. Add some meat above!</p>
+      <p>No items found. Check back later!</p>
     </ion-text>
   </div>
 
