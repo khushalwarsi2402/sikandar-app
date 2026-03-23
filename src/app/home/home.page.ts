@@ -100,7 +100,29 @@ export class HomePage {
     });
     await t.present();
   }
+// Delete item from MongoDB
+  deleteItem(id: string) {
+    if (!id) {
+      this.showToast('Error: Cannot find item ID');
+      return;
+    }
 
+    // Ask for confirmation so you don't accidentally delete mutton!
+    if (!confirm('Are you sure you want to delete this item?')) return;
+
+    this.loading = true;
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        this.showToast('Item deleted permanently!');
+        this.loadInventory(); // Refresh the list
+      },
+      error: (error) => {
+        console.error('Error deleting item:', error);
+        this.showToast('Failed to delete item from server.');
+        this.loading = false;
+      }
+    });
+  }
   // Helper for smooth list rendering
   trackByIndex(_: number, item: any) {
     return item?._id ?? item?.name ?? _;

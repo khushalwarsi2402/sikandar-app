@@ -51,6 +51,22 @@
         <p>Fresh Stock</p>
       </ion-label>
       <ion-badge slot="end" color="success" class="price-badge">₹{{ $any(item).price }}</ion-badge>
+      <ion-item *ngFor="let item of inventory; trackBy: trackByIndex">
+      <ion-avatar slot="start">
+        <img alt="Meat" src="https://cdn-icons-png.flaticon.com/512/1046/1046769.png" />
+      </ion-avatar>
+      
+      <ion-label>
+        <h2 class="item-title">{{ $any(item).name }}</h2>
+        <p>Fresh Stock</p>
+      </ion-label>
+      
+      <ion-badge slot="end" color="success" class="price-badge">₹{{ $any(item).price }}</ion-badge>
+      
+      <ion-button fill="clear" color="danger" slot="end" (click)="deleteItem($any(item)._id)">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
     </ion-item>
   </ion-list>
 
