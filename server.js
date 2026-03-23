@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // 2. YOUR REAL DATABASE CONNECTION
+// (Pro-Tip for later: Usually we hide passwords in a .env file, but this is perfect for now!)
 const MONGODB_URI = "mongodb+srv://khushalwarsi475:Mongodb098@cluster0.w7fb35r.mongodb.net/sikandar_meats?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGODB_URI)
@@ -23,6 +24,7 @@ const itemSchema = new mongoose.Schema({
 const Item = mongoose.model('Item', itemSchema);
 
 // 4. UPDATED ROUTES
+
 // GET items from the real database
 app.get('/api/inventory', async (req, res) => {
   try {
@@ -44,6 +46,19 @@ app.post('/api/inventory', async (req, res) => {
     res.status(201).json(newItem);
   } catch (err) {
     res.status(500).json({ error: "Failed to save item" });
+  }
+});
+
+// 5. THE NEW DELETE ROUTE 🗑️
+// DELETE an item from MongoDB
+app.delete('/api/inventory/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Item.findByIdAndDelete(id); 
+    res.status(200).json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ error: 'Failed to delete item' });
   }
 });
 
