@@ -2,5 +2,6 @@
   "appId": "com.bismillah.meats",
   "appName": "Bismillah Fresh Meats",
   "webDir": "www/browser",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "windowsAndroidStudioPath": "C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
 }
