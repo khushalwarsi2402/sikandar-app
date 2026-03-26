@@ -2,7 +2,8 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.bismillah.meats"
-    compileSdk rootProject.ext.compileSdkVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    // ...
 
     defaultConfig {
         applicationId "com.bismillah.meats"
