@@ -27,3 +27,14 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) {
+                    namespace = "com.bismillah.meats." + project.name.replace("-", ".")
+                }
+            }
+        }
+    }
+}
