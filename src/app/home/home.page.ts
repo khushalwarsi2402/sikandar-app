@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { NgIf, NgForOf } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { addIcons } from 'ionicons';
+import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, trashOutline } from 'ionicons/icons';
 
 // 1. We added AlertController and IonButtons here!
 import { ToastController, AlertController } from '@ionic/angular/standalone'; 
@@ -37,12 +39,20 @@ export class HomePage {
   
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
-  constructor(
+ constructor(
     private inventorySvc: InventoryService, 
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController, // Added here
+    private alertCtrl: AlertController,
     private http: HttpClient 
-  ) {}
+  ) {
+    addIcons({ 
+      'lock-closed-outline': lockClosedOutline, 
+      'lock-open-outline': lockOpenOutline, 
+      'cloud-upload-outline': cloudUploadOutline, 
+      'sync-outline': syncOutline, 
+      'trash-outline': trashOutline 
+    });
+  }
 
   // 🔐 THE SECURE LOGIN POPUP
   async adminLogin() {
