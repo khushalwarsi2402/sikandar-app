@@ -9,6 +9,7 @@ import { InventoryService } from '../services/inventory.service';
 
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
+  IonGrid, IonRow, IonCol,
   IonButton, IonList, IonItem, IonLabel, 
   IonAvatar, IonBadge, IonListHeader, IonIcon, IonText,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
@@ -21,7 +22,8 @@ import {
   styleUrls: ['home.page.scss'],
   standalone: true,
   imports: [
-    NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent, 
+    NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent,
+    IonGrid, IonRow, IonCol, 
     IonButton, IonList, IonItem, IonLabel, 
     IonAvatar, IonBadge, IonListHeader, IonIcon, IonText,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
