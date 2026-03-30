@@ -39,13 +39,19 @@ export class HomePage {
   
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
- constructor(
+constructor(
     private inventorySvc: InventoryService, 
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
+    private alertCtrl: AlertController, 
     private http: HttpClient 
   ) {
-    addIcons({lockClosedOutline,lockOpenOutline,cloudUploadOutline,syncOutline,trashOutline,'lockClosedOutline':lockClosedOutline,'lockOpenOutline':lockOpenOutline,'cloudUploadOutline':cloudUploadOutline,'syncOutline':syncOutline,'trashOutline':trashOutline});
+    addIcons({ 
+      'lock-closed-outline': lockClosedOutline, 
+      'lock-open-outline': lockOpenOutline, 
+      'cloud-upload-outline': cloudUploadOutline, 
+      'sync-outline': syncOutline, 
+      'trash-outline': trashOutline 
+    });
   }
 
   // 🔐 THE SECURE LOGIN POPUP
