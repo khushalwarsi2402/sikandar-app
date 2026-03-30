@@ -45,13 +45,7 @@ export class HomePage {
     private alertCtrl: AlertController,
     private http: HttpClient 
   ) {
-    addIcons({ 
-      'lock-closed-outline': lockClosedOutline, 
-      'lock-open-outline': lockOpenOutline, 
-      'cloud-upload-outline': cloudUploadOutline, 
-      'sync-outline': syncOutline, 
-      'trash-outline': trashOutline 
-    });
+    addIcons({lockClosedOutline,lockOpenOutline,cloudUploadOutline,syncOutline,trashOutline,'lockClosedOutline':lockClosedOutline,'lockOpenOutline':lockOpenOutline,'cloudUploadOutline':cloudUploadOutline,'syncOutline':syncOutline,'trashOutline':trashOutline});
   }
 
   // 🔐 THE SECURE LOGIN POPUP

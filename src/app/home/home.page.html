@@ -67,6 +67,10 @@
             
             <ion-badge slot="end" color="success" class="price-badge">₹{{ $any(item).price }}</ion-badge>
             
+            <ion-button fill="clear" color="warning" slot="end" (click)="editPrice($any(item))" *ngIf="isAdmin">
+              <ion-icon name="sync-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+
             <ion-button fill="clear" color="danger" slot="end" (click)="deleteItem($any(item)._id)" *ngIf="isAdmin">
               <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
             </ion-button>
