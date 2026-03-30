@@ -62,6 +62,28 @@ app.delete('/api/inventory/:id', async (req, res) => {
   }
 });
 
+// UPDATE an item's price
+app.put('/api/inventory/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { price } = req.body;
+    
+    // Find the item and update its price
+    const updatedItem = await Item.findByIdAndUpdate(
+      id, 
+      { price: Number(price) }, 
+      { new: true } // This tells MongoDB to return the updated item
+    );
+    
+    if (!updatedItem) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    res.status(200).json(updatedItem);
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ error: 'Failed to update item' });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Backend API is live and connected to MongoDB!`);
 });
