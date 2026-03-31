@@ -38,7 +38,7 @@
               <ion-input type="number" placeholder="e.g. 750" [(ngModel)]="newItem.price"></ion-input>
             </ion-item>
 
-            <ion-button expand="block" class="ion-margin-top" 
+            <ion-button expand="block" fill="outline" (click)="loadInventory()">
                         (click)="addItem(); newItem.name=''; newItem.price=null">
               <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
               SAVE TO MONGODB
