@@ -3,12 +3,16 @@
     <ion-title>Bismillah Fresh Meats</ion-title>
     
     <ion-buttons slot="end">
-      <ion-button (click)="adminLogin()">
-        <ion-icon slot="icon-only" name="lock-closed-outline" *ngIf="!isAdmin"></ion-icon>
-        <ion-icon slot="icon-only" name="lock-open-outline" *ngIf="isAdmin"></ion-icon>
+      
+      <ion-button class="ion-hide-md-down">
+        Desktop Only Button
       </ion-button>
-    </ion-buttons>
 
+      <ion-button>
+        <ion-icon slot="icon-only" name="lock-closed-outline"></ion-icon>
+      </ion-button>
+
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

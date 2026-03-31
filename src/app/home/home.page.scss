@@ -11,6 +11,17 @@
     border-radius: 8px;
 }
 
+/* Default mobile styles go here */
+.my-card {
+  padding: 10px;
+}
+
+/* Tablet and Desktop styles */
+@media (min-width: 768px) {
+  .my-card {
+    padding: 30px; /* More breathing room on bigger screens */
+  }
+}
 /* 2. LAYOUT TWEAKS */
 ion-content {
     --background: #f8f9fa; // Gives a subtle professional light-grey background
