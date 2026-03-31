@@ -4,7 +4,7 @@ import { ToastController, AlertController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, trashOutline } from 'ionicons/icons';
+import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, trashOutline, cartOutline, cart } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -14,15 +14,19 @@ import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, tr
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class HomePage implements OnInit {
+  
+  // --- YOUR APP's MEMORY VARIABLES ---
   inventory: any[] = [];
-  loading = false;
-  isAdmin = false;
+  isAdmin = false; 
+  cart: any[] = []; 
+  isCartModalOpen = false; // <--- Right here! This is exactly where it goes.
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
+  loading = false;
 
   constructor(
+    private http: HttpClient,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
-    private http: HttpClient
+    private alertCtrl: AlertController
   ) {
     // Icons properly registered here!
     addIcons({
@@ -30,10 +34,21 @@ export class HomePage implements OnInit {
       'lock-open-outline': lockOpenOutline,
       'cloud-upload-outline': cloudUploadOutline,
       'sync-outline': syncOutline,
-      'trash-outline': trashOutline
+      'trash-outline': trashOutline,
+      'cart-outline': cartOutline,
+      'cart': cart
     });
   }
+    // 🛒 CUSTOMER: Add item to virtual cart
+  addToCart(item: any) {
+    this.cart.push(item);
+    this.showToast(`${item.name} added to your cart! 🛒`);
+  }
 
+  // 🧮 CUSTOMER: Calculate total price of cart
+  get cartTotal() {
+    return this.cart.reduce((total, item) => total + item.price, 0);
+  }
   ngOnInit() {
     this.loadInventory();
   }
@@ -77,7 +92,7 @@ export class HomePage implements OnInit {
   }
 
   // ➕ CREATE: Send New Item to Server
-  addItem(name: any, price: string) {
+  addItem(name: any, price: any) {
     if (!name || !price) {
       this.showToast('Please enter both name and price');
       return;

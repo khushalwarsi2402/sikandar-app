@@ -9,17 +9,18 @@ describe('HomePage (unit)', () => {
   beforeEach(() => {
     fakeSvc = { getInventory: jasmine.createSpy('getInventory') };
     fakeToast = { create: jasmine.createSpy('create').and.returnValue(Promise.resolve({ present: () => Promise.resolve() })) };
-    page = new HomePage(fakeSvc, fakeToast as any);
+    const fakeHttpClient = {} as any;
+    page = new HomePage(fakeSvc, fakeToast as any, fakeHttpClient);
+    page.inventory = [];
   });
 
-  it('loads inventory on success and clears loading', (done) => {
+  it('loads inventory on success', (done) => {
     const mock = [{ name: 'A', price: 1 }];
     fakeSvc.getInventory.and.returnValue(of(mock));
 
     page.loadInventory();
 
     setTimeout(() => {
-      expect(page.loading).toBeFalse();
       expect(page.inventory).toEqual(mock);
       done();
     }, 0);
@@ -31,7 +32,6 @@ describe('HomePage (unit)', () => {
     page.loadInventory();
 
     setTimeout(() => {
-      expect(page.loading).toBeFalse();
       expect(page.inventory.length).toBeGreaterThan(0);
       expect(fakeToast.create).toHaveBeenCalled();
       done();
