@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, trashOutline } from 'ionicons/icons';
 
@@ -8,6 +10,8 @@ import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, tr
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class HomePage implements OnInit {
   inventory: any[] = [];
