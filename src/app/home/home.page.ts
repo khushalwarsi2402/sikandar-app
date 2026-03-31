@@ -77,7 +77,7 @@ export class HomePage implements OnInit {
   }
 
   // ➕ CREATE: Send New Item to Server
-  addItem(name: string, price: string) {
+  addItem(name: any, price: string) {
     if (!name || !price) {
       this.showToast('Please enter both name and price');
       return;
