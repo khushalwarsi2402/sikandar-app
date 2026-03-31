@@ -1,84 +1,62 @@
-import { Component } from '@angular/core';
-import { NgIf, NgForOf } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ToastController, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, trashOutline } from 'ionicons/icons';
-
-// 1. We added AlertController and IonButtons here!
-import { ToastController, AlertController } from '@ionic/angular/standalone'; 
-import { finalize } from 'rxjs/operators';
-import { InventoryService } from '../services/inventory.service';
-
-import { 
-  IonHeader, IonToolbar, IonTitle, IonContent, 
-  IonGrid, IonRow, IonCol,
-  IonButton, IonList, IonItem, IonLabel, 
-  IonAvatar, IonBadge, IonListHeader, IonIcon, IonText,
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
-  IonButtons 
-} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  standalone: true,
-  imports: [
-    NgIf, NgForOf, IonHeader, IonToolbar, IonTitle, IonContent,
-    IonGrid, IonRow, IonCol, 
-    IonButton, IonList, IonItem, IonLabel, 
-    IonAvatar, IonBadge, IonListHeader, IonIcon, IonText,
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonInput,
-    IonButtons
-  ],
 })
-export class HomePage {
-  inventory: any[] = []; 
+export class HomePage implements OnInit {
+  inventory: any[] = [];
   loading = false;
-  isAdmin = false; // 🔒 This controls what people can see!
-  
+  isAdmin = false;
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
-constructor(
-    private inventorySvc: InventoryService, 
+  constructor(
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController, 
-    private http: HttpClient 
+    private alertCtrl: AlertController,
+    private http: HttpClient
   ) {
-    addIcons({ 
-      'lock-closed-outline': lockClosedOutline, 
-      'lock-open-outline': lockOpenOutline, 
-      'cloud-upload-outline': cloudUploadOutline, 
-      'sync-outline': syncOutline, 
-      'trash-outline': trashOutline 
+    // Icons properly registered here!
+    addIcons({
+      'lock-closed-outline': lockClosedOutline,
+      'lock-open-outline': lockOpenOutline,
+      'cloud-upload-outline': cloudUploadOutline,
+      'sync-outline': syncOutline,
+      'trash-outline': trashOutline
     });
   }
 
-  // 🔐 THE SECURE LOGIN POPUP
+  ngOnInit() {
+    this.loadInventory();
+  }
+
+  // 🔐 Admin Login Logic
   async adminLogin() {
-    // If already logged in, this will log you out
     if (this.isAdmin) {
       this.isAdmin = false;
-      this.showToast('Logged out securely.');
+      this.showToast('Logged out of Admin Mode');
       return;
     }
 
     const alert = await this.alertCtrl.create({
-      header: 'Owner Access',
+      header: 'Admin Access',
       inputs: [
-        { name: 'pin', type: 'password', placeholder: 'Enter Secret PIN' }
+        { name: 'pin', type: 'password', placeholder: 'Enter PIN' }
       ],
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
-          text: 'Unlock',
+          text: 'Login',
           handler: (data) => {
-            // Your secret PIN is 786 (you can change this!)
-            if (data.pin === '786') { 
+            if (data.pin === '786') {
               this.isAdmin = true;
-              this.showToast('Welcome back, Boss!');
+              this.showToast('Admin Mode Unlocked!');
             } else {
-              this.showToast('Incorrect PIN!');
+              this.showToast('Incorrect PIN');
             }
           }
         }
@@ -87,57 +65,88 @@ constructor(
     await alert.present();
   }
 
+  // 🔄 READ: Get Items from Server
   loadInventory() {
-    this.loading = true;
-    this.http.get<any[]>(this.apiUrl).pipe(finalize(() => this.loading = false)).subscribe({
-      next: (data: any[]) => { this.inventory = data || []; },
-      error: (err) => { this.showToast('Could not connect to the server.'); }
+    this.http.get<any[]>(this.apiUrl).subscribe(data => {
+      this.inventory = data;
     });
   }
 
-  addItem(name: any, price: any) {
-    // 1. We split this into two lines so TypeScript doesn't get confused by the "Promise"
+  // ➕ CREATE: Send New Item to Server
+  addItem(name: string, price: string) {
     if (!name || !price) {
-      this.showToast('Please enter name and price!');
-      return; 
+      this.showToast('Please enter both name and price');
+      return;
     }
-
-    // 2. Format the data for MongoDB
-    const newItem = { 
-      name: String(name), 
-      price: Number(price) 
-    };
-    
-    // 3. Send it to the cloud
-    this.http.post(this.apiUrl, newItem).subscribe({
-      next: () => {
-        this.showToast('Item saved!');
-        this.loadInventory(); 
-      },
-      error: () => this.showToast('Failed to save.')
+    this.http.post(this.apiUrl, { name, price: Number(price) }).subscribe(() => {
+      this.showToast('Item added to MongoDB!');
+      this.loadInventory();
     });
   }
+
+  // 🗑️ DELETE: Tell Server to Remove Item
   deleteItem(id: string) {
-    if (!id) return;
-    if (!confirm('Are you sure you want to delete this item?')) return;
-    
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe(() => {
+      this.showToast('Item deleted!');
+      this.loadInventory();
+    });
+  }
+
+  // ✏️ UPDATE (Part 1): Show Edit Popup
+  async editPrice(item: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Edit Price',
+      subHeader: item.name,
+      inputs: [
+        {
+          name: 'newPrice',
+          type: 'number',
+          placeholder: 'Enter new price',
+          value: item.price
+        }
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Save',
+          handler: (data) => {
+            if (data.newPrice) {
+              this.sendUpdatedPrice(item._id, data.newPrice);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // 📡 UPDATE (Part 2): Send New Price to Server
+  sendUpdatedPrice(id: string, newPrice: any) {
     this.loading = true;
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+    this.http.put(`${this.apiUrl}/${id}`, { price: newPrice }).subscribe({
       next: () => {
-        this.showToast('Item deleted!');
+        this.showToast('Price updated!');
         this.loadInventory();
       },
       error: () => {
-        this.showToast('Failed to delete item.');
+        this.showToast('Failed to update price.');
         this.loading = false;
       }
     });
   }
 
-  private async showToast(message: string, duration = 2000) {
-    const t = await this.toastCtrl.create({ message, duration, position: 'bottom' });
-    await t.present();
+  // 🍞 Helper function to show popup messages
+  async showToast(message: string) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2000,
+      position: 'bottom'
+    });
+    toast.present();
   }
 
-  trackByIndex(_: number, item: any) { return item?._id ?? _; }
+  // Helps Angular render the list efficiently
+  trackByIndex(index: number, item: any) {
+    return item._id;
+  }
 }

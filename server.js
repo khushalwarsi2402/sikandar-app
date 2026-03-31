@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose'); // 1. Added Mongoose
+const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,24 +8,23 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// 2. YOUR REAL DATABASE CONNECTION
-// (Pro-Tip for later: Usually we hide passwords in a .env file, but this is perfect for now!)
+// DATABASE CONNECTION
 const MONGODB_URI = "mongodb+srv://khushalwarsi475:Mongodb098@cluster0.w7fb35r.mongodb.net/sikandar_meats?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ Connected to MongoDB Atlas (Mumbai)'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// 3. DEFINE THE DATA MODEL
+// DATA MODEL
 const itemSchema = new mongoose.Schema({
   name: String,
   price: Number
 });
 const Item = mongoose.model('Item', itemSchema);
 
-// 4. UPDATED ROUTES
+// --- API ROUTES ---
 
-// GET items from the real database
+// GET: Fetch all items
 app.get('/api/inventory', async (req, res) => {
   try {
     const items = await Item.find();
@@ -35,7 +34,7 @@ app.get('/api/inventory', async (req, res) => {
   }
 });
 
-// POST a new item to the real database
+// POST: Add a new item
 app.post('/api/inventory', async (req, res) => {
   try {
     const newItem = new Item({
@@ -49,8 +48,7 @@ app.post('/api/inventory', async (req, res) => {
   }
 });
 
-// 5. THE NEW DELETE ROUTE 🗑️
-// DELETE an item from MongoDB
+// DELETE: Remove an item
 app.delete('/api/inventory/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,17 +60,16 @@ app.delete('/api/inventory/:id', async (req, res) => {
   }
 });
 
-// UPDATE an item's price
+// PUT: Update an item's price
 app.put('/api/inventory/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { price } = req.body;
     
-    // Find the item and update its price
     const updatedItem = await Item.findByIdAndUpdate(
       id, 
       { price: Number(price) }, 
-      { new: true } // This tells MongoDB to return the updated item
+      { new: true }
     );
     
     if (!updatedItem) {
@@ -84,6 +81,7 @@ app.put('/api/inventory/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to update item' });
   }
 });
+
 app.listen(PORT, () => {
   console.log(`Backend API is live and connected to MongoDB!`);
 });
