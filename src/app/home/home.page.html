@@ -30,18 +30,23 @@
           <ion-card-content>
             <ion-item lines="full">
               <ion-label position="stacked">Item Name</ion-label>
-              <ion-input #itemName placeholder="e.g. Mutton Chops" type="text"></ion-input>
+              <ion-input type="text" placeholder="e.g. Mutton Chops" [(ngModel)]="newItem.name"></ion-input>
             </ion-item>
 
             <ion-item lines="full">
               <ion-label position="stacked">Price (₹)</ion-label>
-              <ion-input #itemPrice placeholder="e.g. 750" type="number"></ion-input>
+              <ion-input type="number" placeholder="e.g. 750" [(ngModel)]="newItem.price"></ion-input>
             </ion-item>
 
             <ion-button expand="block" class="ion-margin-top" 
-                        (click)="addItem(itemName.value, itemPrice.value); itemName.value=''; itemPrice.value=''">
+                        (click)="addItem(); newItem.name=''; newItem.price=null">
               <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-              Save to MongoDB
+              SAVE TO MONGODB
+            </ion-button>
+
+            <ion-button expand="block" fill="outline" (click)="fetchInventory()">
+              <ion-icon slot="start" name="sync-outline"></ion-icon>
+              REFRESH INVENTORY
             </ion-button>
           </ion-card-content>
         </ion-card>

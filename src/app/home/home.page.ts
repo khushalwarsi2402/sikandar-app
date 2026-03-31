@@ -4,7 +4,15 @@ import { ToastController, AlertController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, trashOutline, cartOutline, cart } from 'ionicons/icons';
+import { 
+  lockClosedOutline, 
+  lockOpenOutline, 
+  cloudUploadOutline, 
+  syncOutline, 
+  trashOutline, 
+  cartOutline, 
+  cart 
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -19,9 +27,14 @@ export class HomePage implements OnInit {
   inventory: any[] = [];
   isAdmin = false; 
   cart: any[] = []; 
-  isCartModalOpen = false; // <--- Right here! This is exactly where it goes.
-  private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
+  isCartModalOpen = false;
   loading = false;
+  
+  // We need this so your HTML form [(ngModel)] has somewhere to store the typed text!
+  newItem = { name: '', price: null as number | null }; 
+
+  // Production Database URL
+  private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
   constructor(
     private http: HttpClient,
@@ -39,7 +52,12 @@ export class HomePage implements OnInit {
       'cart': cart
     });
   }
-    // 🛒 CUSTOMER: Add item to virtual cart
+
+  ngOnInit() {
+    this.loadInventory();
+  }
+
+  // 🛒 CUSTOMER: Add item to virtual cart
   addToCart(item: any) {
     this.cart.push(item);
     this.showToast(`${item.name} added to your cart! 🛒`);
@@ -48,9 +66,6 @@ export class HomePage implements OnInit {
   // 🧮 CUSTOMER: Calculate total price of cart
   get cartTotal() {
     return this.cart.reduce((total, item) => total + item.price, 0);
-  }
-  ngOnInit() {
-    this.loadInventory();
   }
 
   // 🔐 Admin Login Logic
@@ -86,28 +101,56 @@ export class HomePage implements OnInit {
 
   // 🔄 READ: Get Items from Server
   loadInventory() {
-    this.http.get<any[]>(this.apiUrl).subscribe(data => {
-      this.inventory = data;
+    this.loading = true;
+    this.http.get<any[]>(this.apiUrl).subscribe({
+      next: (data) => {
+        this.inventory = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.showToast('Failed to load inventory from MongoDB.');
+        this.loading = false;
+      }
     });
   }
 
   // ➕ CREATE: Send New Item to Server
-  addItem(name: any, price: any) {
-    if (!name || !price) {
+  addItem() {
+    // Check if the form is empty before saving
+    if (!this.newItem.name || !this.newItem.price) {
       this.showToast('Please enter both name and price');
       return;
     }
-    this.http.post(this.apiUrl, { name, price: Number(price) }).subscribe(() => {
-      this.showToast('Item added to MongoDB!');
-      this.loadInventory();
+    
+    this.loading = true;
+    this.http.post(this.apiUrl, { 
+      name: this.newItem.name, 
+      price: Number(this.newItem.price) 
+    }).subscribe({
+      next: () => {
+        this.showToast('Item added to MongoDB!');
+        this.newItem = { name: '', price: null }; // This successfully clears the input boxes!
+        this.loadInventory();
+      },
+      error: () => {
+        this.showToast('Failed to save item.');
+        this.loading = false;
+      }
     });
   }
 
   // 🗑️ DELETE: Tell Server to Remove Item
   deleteItem(id: string) {
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe(() => {
-      this.showToast('Item deleted!');
-      this.loadInventory();
+    this.loading = true;
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        this.showToast('Item deleted!');
+        this.loadInventory();
+      },
+      error: () => {
+        this.showToast('Failed to delete item.');
+        this.loading = false;
+      }
     });
   }
 
@@ -130,7 +173,7 @@ export class HomePage implements OnInit {
           text: 'Save',
           handler: (data) => {
             if (data.newPrice) {
-              this.sendUpdatedPrice(item._id, data.newPrice);
+              this.sendUpdatedPrice(item._id, Number(data.newPrice));
             }
           }
         }
@@ -140,7 +183,7 @@ export class HomePage implements OnInit {
   }
 
   // 📡 UPDATE (Part 2): Send New Price to Server
-  sendUpdatedPrice(id: string, newPrice: any) {
+  sendUpdatedPrice(id: string, newPrice: number) {
     this.loading = true;
     this.http.put(`${this.apiUrl}/${id}`, { price: newPrice }).subscribe({
       next: () => {
