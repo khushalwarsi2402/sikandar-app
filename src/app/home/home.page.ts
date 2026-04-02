@@ -8,10 +8,15 @@ import {
   IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, 
   IonIcon, IonList, IonListHeader, IonAvatar, IonBadge, IonSpinner, IonButtons 
 } from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
+import { addIcons } from 'ionicons'; // Add this
 import { 
-  lockClosedOutline, lockOpenOutline, cloudUploadOutline, 
-  syncOutline, trashOutline, cartOutline, cart 
+  trashOutline, 
+  lockClosedOutline, 
+  lockOpenOutline, 
+  cloudUploadOutline, 
+  syncOutline,
+  addCircleOutline,
+  cartOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -36,22 +41,18 @@ export class HomePage implements OnInit {
 
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
-  constructor(
-  private alertCtrl: AlertController, // Make sure this is here!
-  private toastCtrl: ToastController,
-  private http: HttpClient
-) {
-    addIcons({
-      'lock-closed-outline': lockClosedOutline,
-      'lock-open-outline': lockOpenOutline,
-      'cloud-upload-outline': cloudUploadOutline,
-      'sync-outline': syncOutline,
-      'trash-outline': trashOutline,
-      'cart-outline': cartOutline,
-      'cart': cart
-    });
-  }
-
+  constructor(private alertCtrl: AlertController, private toastCtrl: ToastController, private http: HttpClient) {
+  // Add this block inside your constructor
+  addIcons({ 
+    trashOutline, 
+    lockClosedOutline, 
+    lockOpenOutline, 
+    cloudUploadOutline, 
+    syncOutline,
+    addCircleOutline,
+    cartOutline
+  });
+}
   ngOnInit() {
     this.loadInventory();
   }

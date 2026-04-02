@@ -15,66 +15,76 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding grey-background">
   
-  <ion-card *ngIf="isAdmin">
+  <ion-refresher slot="fixed" (ionRefresh)="loadInventory($event)">
+    <ion-refresher-content pullingText="Pull to refresh prices..."></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-searchbar 
+    placeholder="Search for Mutton, Chicken..." 
+    class="custom-search"
+    (ionInput)="handleSearch($event)">
+  </ion-searchbar>
+
+  <ion-card *ngIf="isAdmin" class="admin-card">
     <ion-card-header>
-      <ion-card-title>Update Stock</ion-card-title>
+      <ion-card-title>Update Inventory</ion-card-title>
     </ion-card-header>
-    
     <ion-card-content>
-      <ion-item>
-        <ion-label position="stacked">Item Name</ion-label>
-        <ion-input [(ngModel)]="newItem.name" placeholder="e.g. Mutton Chops"></ion-input>
+      <ion-item fill="outline" class="ion-margin-bottom">
+        <ion-label position="floating">Item Name</ion-label>
+        <ion-input [(ngModel)]="newItem.name" placeholder="e.g. Premium Mutton"></ion-input>
       </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Price (₹)</ion-label>
-        <ion-input type="number" [(ngModel)]="newItem.price" placeholder="e.g. 750"></ion-input>
+      <ion-item fill="outline">
+        <ion-label position="floating">Price (₹)</ion-label>
+        <ion-input type="number" [(ngModel)]="newItem.price" placeholder="750"></ion-input>
       </ion-item>
-
-      <ion-button expand="block" class="ion-margin-top" (click)="saveItem()">
-        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-        SAVE TO MONGODB
+      <ion-button expand="block" shape="round" class="ion-margin-top" (click)="saveItem()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        ADD NEW ITEM
       </ion-button>
     </ion-card-content>
   </ion-card>
 
-  <ion-button expand="block" fill="outline" class="ion-margin-vertical" (click)="loadInventory()">
-    <ion-icon name="sync-outline" slot="start"></ion-icon>
-    REFRESH INVENTORY
-  </ion-button>
+  <div class="section-title" *ngIf="inventory.length > 0">Today's Fresh Cuts</div>
+  
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6" *ngFor="let item of inventory">
+        <ion-card class="product-card">
+          <div class="image-container">
+            <span class="meat-emoji">🥩</span>
+            <ion-badge color="danger" class="discount-badge" *ngIf="item.price < 500">OFFER</ion-badge>
+          </div>
+          
+          <ion-card-header>
+            <ion-card-subtitle>₹{{ item.price }}/kg</ion-card-subtitle>
+            <ion-card-title>{{ item.name }}</ion-card-title>
+          </ion-card-header>
 
-  <ion-list *ngIf="inventory.length > 0">
-    <ion-list-header>
-      <ion-label>Today's Live Prices</ion-label>
-    </ion-list-header>
+          <ion-card-content>
+            <ion-button expand="block" size="small" fill="solid" color="primary">
+              ADD
+            </ion-button>
+            
+            <ion-button fill="clear" color="danger" size="small" *ngIf="isAdmin" (click)="deleteItem(item._id || item.id)">
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
-    <ion-item *ngFor="let item of inventory">
-      <ion-avatar slot="start">
-        <div class="avatar-badge">🥩</div>
-      </ion-avatar>
-      
-      <ion-label>
-        <h2><strong>{{ item.name }}</strong></h2>
-        <p>Fresh Stock</p>
-      </ion-label>
-      
-      <ion-badge color="success" slot="end">₹{{ item.price }}</ion-badge>
-      
-      <ion-button fill="clear" color="danger" slot="end" *ngIf="isAdmin" (click)="deleteItem(item._id || item.id)">
-        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-item>
-  </ion-list>
-
-  <div *ngIf="inventory.length === 0 && !loading" class="ion-text-center ion-margin-top no-items-text">
-    <p>No items found. Unlock to add some meat!</p>
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="dots" color="primary"></ion-spinner>
+    <p>Connecting to Bismillah Fresh Meats...</p>
   </div>
 
-  <div *ngIf="loading" class="ion-text-center ion-margin-top">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Fetching live prices...</p>
+  <div *ngIf="inventory.length === 0 && !loading" class="empty-state">
+    <ion-icon name="cart-outline"></ion-icon>
+    <p>No meat in stock today. Please check back later!</p>
   </div>
 
 </ion-content>
