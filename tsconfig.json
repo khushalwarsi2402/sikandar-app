@@ -1,13 +1,11 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "rootDir": "./src",
-    "ignoreDeprecations": "6.0",
-    "outDir": "./dist/out-tsc",
+    "rootDir": "./",
+    "skipLibCheck": true,
+    "outDir": "./out-tsc/app",
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true,
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -15,14 +13,18 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
+    "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2022",
-    "module": "es2020",
-    "lib": ["es2018", "dom"],
-    "skipLibCheck": true,
-    "useDefineForClassFields": false
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "dom"
+    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
