@@ -1,98 +1,80 @@
-<ion-header>
+<ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Bismillah Fresh Meats</ion-title>
+    <ion-title>
+      Bismillah Fresh Meats
+    </ion-title>
     
     <ion-buttons slot="end">
-      
-      <ion-button class="ion-hide-md-down">
-        Desktop Only Button
-      </ion-button>
-
-      <ion-button>
-        <ion-icon slot="icon-only" name="lock-closed-outline"></ion-icon>
-      </ion-button>
-
+      <ion-icon 
+        [name]="isAdmin ? 'lock-open-outline' : 'lock-closed-outline'" 
+        (click)="toggleAdmin()" 
+        class="admin-icon">
+      </ion-icon>
     </ion-buttons>
+    
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding">
   
-  <ion-grid>
-    <ion-row>
+  <ion-card *ngIf="isAdmin">
+    <ion-card-header>
+      <ion-card-title>Update Stock</ion-card-title>
+    </ion-card-header>
+    
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Item Name</ion-label>
+        <ion-input [(ngModel)]="newItem.name" placeholder="e.g. Mutton Chops"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Price (₹)</ion-label>
+        <ion-input type="number" [(ngModel)]="newItem.price" placeholder="e.g. 750"></ion-input>
+      </ion-item>
+
+      <ion-button expand="block" class="ion-margin-top" (click)="saveItem()">
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        SAVE TO MONGODB
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-button expand="block" fill="outline" class="ion-margin-vertical" (click)="loadInventory()">
+    <ion-icon name="sync-outline" slot="start"></ion-icon>
+    REFRESH INVENTORY
+  </ion-button>
+
+  <ion-list *ngIf="inventory.length > 0">
+    <ion-list-header>
+      <ion-label>Today's Live Prices</ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let item of inventory">
+      <ion-avatar slot="start">
+        <div class="avatar-badge">🥩</div>
+      </ion-avatar>
       
-      <ion-col size="12" size-md="4" *ngIf="isAdmin">
-        <ion-card class="ion-margin-bottom">
-          <ion-card-header>
-            <ion-card-title>Update Stock</ion-card-title>
-          </ion-card-header>
-          
-          <ion-card-content>
-            <ion-item lines="full">
-              <ion-label position="stacked">Item Name</ion-label>
-              <ion-input type="text" placeholder="e.g. Mutton Chops" [(ngModel)]="newItem.name"></ion-input>
-            </ion-item>
+      <ion-label>
+        <h2><strong>{{ item.name }}</strong></h2>
+        <p>Fresh Stock</p>
+      </ion-label>
+      
+      <ion-badge color="success" slot="end">₹{{ item.price }}</ion-badge>
+      
+      <ion-button fill="clear" color="danger" slot="end" *ngIf="isAdmin" (click)="deleteItem(item._id || item.id)">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
 
-            <ion-item lines="full">
-              <ion-label position="stacked">Price (₹)</ion-label>
-              <ion-input type="number" placeholder="e.g. 750" [(ngModel)]="newItem.price"></ion-input>
-            </ion-item>
+  <div *ngIf="inventory.length === 0 && !loading" class="ion-text-center ion-margin-top no-items-text">
+    <p>No items found. Unlock to add some meat!</p>
+  </div>
 
-            <ion-button expand="block" fill="outline" (click)="loadInventory()">
-                        (click)="addItem(); newItem.name=''; newItem.price=null">
-              <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-              SAVE TO MONGODB
-            </ion-button>
-
-            <ion-button expand="block" fill="outline" (click)="loadInventory()">
-              <ion-icon slot="start" name="sync-outline"></ion-icon>
-              REFRESH INVENTORY
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-
-      <ion-col size="12" [sizeMd]="isAdmin ? 8 : 12">
-        
-        <ion-button expand="block" fill="outline" (click)="loadInventory()" class="ion-margin-bottom">
-          <ion-icon slot="start" name="sync-outline"></ion-icon>
-          Refresh Inventory
-        </ion-button>
-
-        <ion-list *ngIf="inventory && inventory.length > 0">
-          <ion-list-header>
-            <ion-label>Today's Live Prices</ion-label>
-          </ion-list-header>
-
-          <ion-item *ngFor="let item of inventory; trackBy: trackByIndex">
-            <ion-avatar slot="start">
-              <img alt="Meat" src="https://cdn-icons-png.flaticon.com/512/1046/1046769.png" />
-            </ion-avatar>
-            
-            <ion-label>
-              <h2 class="item-title">{{ $any(item).name }}</h2>
-              <p>Fresh Stock</p>
-            </ion-label>
-            
-            <ion-badge slot="end" color="success" class="price-badge">₹{{ $any(item).price }}</ion-badge>
-            
-            <ion-button fill="clear" color="warning" slot="end" (click)="editPrice($any(item))" *ngIf="isAdmin">
-              <ion-icon name="sync-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-
-            <ion-button fill="clear" color="danger" slot="end" (click)="deleteItem($any(item)._id)" *ngIf="isAdmin">
-              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-          </ion-item>
-        </ion-list>
-
-        <div class="ion-text-center ion-padding" *ngIf="inventory.length === 0">
-          <p class="no-items-text">No items found. Check back later!</p>
-        </div>
-
-      </ion-col>
-
-    </ion-row>
-  </ion-grid>
+  <div *ngIf="loading" class="ion-text-center ion-margin-top">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Fetching live prices...</p>
+  </div>
 
 </ion-content>

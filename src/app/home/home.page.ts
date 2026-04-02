@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, AlertController, IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ToastController, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { 
   lockClosedOutline, 
@@ -18,19 +16,17 @@ import {
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class HomePage implements OnInit {
   
-  // --- YOUR APP's MEMORY VARIABLES ---
+  // --- APP MEMORY VARIABLES ---
   inventory: any[] = [];
   isAdmin = false; 
   cart: any[] = []; 
   isCartModalOpen = false;
   loading = false;
   
-  // We need this so your HTML form [(ngModel)] has somewhere to store the typed text!
+  // Storage for the HTML form inputs
   newItem = { name: '', price: null as number | null }; 
 
   // Production Database URL
@@ -41,7 +37,7 @@ export class HomePage implements OnInit {
     private toastCtrl: ToastController,
     private alertCtrl: AlertController
   ) {
-    // Icons properly registered here!
+    // Registering all the required Ionic icons
     addIcons({
       'lock-closed-outline': lockClosedOutline,
       'lock-open-outline': lockOpenOutline,
@@ -57,49 +53,12 @@ export class HomePage implements OnInit {
     this.loadInventory();
   }
 
-  // 🛒 CUSTOMER: Add item to virtual cart
-  addToCart(item: any) {
-    this.cart.push(item);
-    this.showToast(`${item.name} added to your cart! 🛒`);
+  // Flips the Admin mode on and off
+  toggleAdmin() {
+    this.isAdmin = !this.isAdmin;
   }
 
-  // 🧮 CUSTOMER: Calculate total price of cart
-  get cartTotal() {
-    return this.cart.reduce((total, item) => total + item.price, 0);
-  }
-
-  // 🔐 Admin Login Logic
-  async adminLogin() {
-    if (this.isAdmin) {
-      this.isAdmin = false;
-      this.showToast('Logged out of Admin Mode');
-      return;
-    }
-
-    const alert = await this.alertCtrl.create({
-      header: 'Admin Access',
-      inputs: [
-        { name: 'pin', type: 'password', placeholder: 'Enter PIN' }
-      ],
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Login',
-          handler: (data) => {
-            if (data.pin === '786') {
-              this.isAdmin = true;
-              this.showToast('Admin Mode Unlocked!');
-            } else {
-              this.showToast('Incorrect PIN');
-            }
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
-  // 🔄 READ: Get Items from Server
+  // Fetch data from MongoDB
   loadInventory() {
     this.loading = true;
     this.http.get<any[]>(this.apiUrl).subscribe({
@@ -107,108 +66,55 @@ export class HomePage implements OnInit {
         this.inventory = data;
         this.loading = false;
       },
-      error: () => {
-        this.showToast('Failed to load inventory from MongoDB.');
+      error: (err) => {
+        console.error('Error fetching inventory:', err);
+        this.showToast('Failed to load inventory. Is the server awake?');
         this.loading = false;
       }
     });
   }
 
-  // ➕ CREATE: Send New Item to Server
-  addItem() {
-    // Check if the form is empty before saving
+  // Save new item to MongoDB
+  saveItem() {
     if (!this.newItem.name || !this.newItem.price) {
-      this.showToast('Please enter both name and price');
+      this.showToast('Please enter both name and price!');
       return;
     }
-    
-    this.loading = true;
-    this.http.post(this.apiUrl, { 
-      name: this.newItem.name, 
-      price: Number(this.newItem.price) 
-    }).subscribe({
+
+    this.http.post(this.apiUrl, this.newItem).subscribe({
       next: () => {
-        this.showToast('Item added to MongoDB!');
-        this.newItem = { name: '', price: null }; // This successfully clears the input boxes!
-        this.loadInventory();
+        this.showToast('Item saved successfully!');
+        this.newItem = { name: '', price: null }; // Clear the form
+        this.loadInventory(); // Refresh the list
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error saving item:', err);
         this.showToast('Failed to save item.');
-        this.loading = false;
       }
     });
   }
 
-  // 🗑️ DELETE: Tell Server to Remove Item
+  // Delete an item
   deleteItem(id: string) {
-    this.loading = true;
     this.http.delete(`${this.apiUrl}/${id}`).subscribe({
       next: () => {
         this.showToast('Item deleted!');
         this.loadInventory();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error deleting item:', err);
         this.showToast('Failed to delete item.');
-        this.loading = false;
       }
     });
   }
 
-  // ✏️ UPDATE (Part 1): Show Edit Popup
-  async editPrice(item: any) {
-    const alert = await this.alertCtrl.create({
-      header: 'Edit Price',
-      subHeader: item.name,
-      inputs: [
-        {
-          name: 'newPrice',
-          type: 'number',
-          placeholder: 'Enter new price',
-          value: item.price
-        }
-      ],
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Save',
-          handler: (data) => {
-            if (data.newPrice) {
-              this.sendUpdatedPrice(item._id, Number(data.newPrice));
-            }
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
-  // 📡 UPDATE (Part 2): Send New Price to Server
-  sendUpdatedPrice(id: string, newPrice: number) {
-    this.loading = true;
-    this.http.put(`${this.apiUrl}/${id}`, { price: newPrice }).subscribe({
-      next: () => {
-        this.showToast('Price updated!');
-        this.loadInventory();
-      },
-      error: () => {
-        this.showToast('Failed to update price.');
-        this.loading = false;
-      }
-    });
-  }
-
-  // 🍞 Helper function to show popup messages
+  // Helper function for quick notifications
   async showToast(message: string) {
     const toast = await this.toastCtrl.create({
-      message,
+      message: message,
       duration: 2000,
       position: 'bottom'
     });
     toast.present();
-  }
-
-  // Helps Angular render the list efficiently
-  trackByIndex(index: number, item: any) {
-    return item._id;
   }
 }
