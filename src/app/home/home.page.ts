@@ -73,7 +73,7 @@ async toggleAdmin() {
         {
           name: 'pin',
           type: 'password',
-          placeholder: '2404',
+          placeholder: '****',
           attributes: {
             inputmode: 'numeric',
             maxlength: 4
@@ -89,7 +89,7 @@ async toggleAdmin() {
         {
           text: 'Unlock',
           handler: (data: any) => {
-            if (data.pin === '1234') {
+            if (data.pin === '2404') {
               this.isAdmin = true;
               this.showToast('Unlocked!');
               return true;
