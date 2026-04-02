@@ -37,10 +37,10 @@ export class HomePage implements OnInit {
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
   constructor(
-    private http: HttpClient,
-    private toastCtrl: ToastController,
-    private alertCtrl: AlertController
-  ) {
+  private alertCtrl: AlertController, // Make sure this is here!
+  private toastCtrl: ToastController,
+  private http: HttpClient
+) {
     addIcons({
       'lock-closed-outline': lockClosedOutline,
       'lock-open-outline': lockOpenOutline,
@@ -56,55 +56,59 @@ export class HomePage implements OnInit {
     this.loadInventory();
   }
 
- async toggleAdmin() {
-  // 1. If we are already an Admin, just lock it back up immediately.
+async toggleAdmin() {
+  console.log("Lock clicked. Current Admin Status:", this.isAdmin);
+
   if (this.isAdmin) {
     this.isAdmin = false;
-    this.showToast('Admin Mode: Locked');
+    this.showToast('Inventory Locked');
     return;
   }
 
-  // 2. If we are NOT an admin, ask for the secret PIN.
-  const alert = await this.alertCtrl.create({
-    header: 'Admin Authentication',
-    subHeader: 'Enter PIN to update stock',
-    inputs: [
-      {
-        name: 'pin',
-        type: 'password',
-        placeholder: '2404',
-        attributes: {
-          inputmode: 'numeric',
-          maxlength: 4,
-          style: 'text-align: center; font-size: 20px;'
-        }
-      }
-    ],
-    buttons: [
-      {
-        text: 'Cancel',
-        role: 'cancel'
-      },
-      {
-        text: 'Unlock',
-       handler: (data: any) => {
-          // Change '1234' to whatever secret code you want!
-          if (data.pin === '1234') {
-            this.isAdmin = true;
-            this.showToast('Admin Mode: Unlocked');
-            return true;
-          } else {
-            this.showToast('Incorrect PIN! Access Denied.');
-            return false; // Keeps the alert open
+  try {
+    const alert = await this.alertCtrl.create({
+      header: 'Admin Access',
+      backdropDismiss: false, // This prevents accidental closing
+      inputs: [
+        {
+          name: 'pin',
+          type: 'password',
+          placeholder: '2404',
+          attributes: {
+            inputmode: 'numeric',
+            maxlength: 4
           }
         }
-      }
-    ]
-  });
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => { console.log('User cancelled'); }
+        },
+        {
+          text: 'Unlock',
+          handler: (data: any) => {
+            if (data.pin === '1234') {
+              this.isAdmin = true;
+              this.showToast('Unlocked!');
+              return true;
+            } else {
+              this.showToast('Wrong PIN!');
+              return false; // Keeps alert open
+            }
+          }
+        }
+      ]
+    });
 
-  await alert.present();
+    await alert.present();
+    console.log("Alert presented successfully");
+
+  } catch (error) {
+    console.error("Alert failed to open:", error);
+  }
 }
-
   loadInventory() {
     this.loading = true;
     this.http.get<any[]>(this.apiUrl).subscribe({
