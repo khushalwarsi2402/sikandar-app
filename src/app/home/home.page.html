@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar color="primary">
-    <ion-title>Bismillah Fresh Meats</ion-title>
+    <ion-title>Sikandar Fresh Meats</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="toggleAdmin()">
         <ion-icon [name]="isAdmin ? 'lock-open-outline' : 'lock-closed-outline'"></ion-icon>
@@ -8,7 +8,7 @@
     </ion-buttons>
   </ion-toolbar>
   
-  <ion-toolbar color="primary">
+  <ion-toolbar color="primary" *ngIf="currentView === 'home'">
     <ion-searchbar 
       placeholder="Search for Mutton, Chicken..." 
       class="custom-search"
@@ -18,106 +18,161 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ecommerce-bg">
-  
-  <ion-refresher slot="fixed" (ionRefresh)="loadInventory($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
 
-  <ion-card *ngIf="isAdmin" class="admin-card">
-    <ion-card-header>
-      <ion-card-title>Update Stock</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item fill="outline" class="ion-margin-bottom">
-        <ion-label position="floating">Item Name</ion-label>
-        <ion-input [(ngModel)]="newItem.name"></ion-input>
+  <div *ngIf="currentView === 'home'">
+    <ion-refresher slot="fixed" (ionRefresh)="loadInventory($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <ion-card *ngIf="isAdmin" class="admin-card ion-margin-top">
+      <ion-card-header>
+        <ion-card-title>Update Inventory</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item fill="outline" class="ion-margin-bottom">
+          <ion-label position="floating">Item Name</ion-label>
+          <ion-input [(ngModel)]="newItem.name"></ion-input>
+        </ion-item>
+        <ion-item fill="outline" class="ion-margin-bottom">
+          <ion-label position="floating">Price per kg</ion-label>
+          <ion-input type="number" [(ngModel)]="newItem.price"></ion-input>
+        </ion-item>
+        <ion-item fill="outline" class="ion-margin-bottom">
+          <ion-label position="floating">Image URL</ion-label>
+          <ion-input [(ngModel)]="newItem.imageUrl" placeholder="https://..."></ion-input>
+        </ion-item>
+        <ion-button expand="block" (click)="saveItem()">
+          <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+          Add to Shop
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="promo-banner">
+      <h3>Freshness Guaranteed</h3>
+      <p>Premium cuts delivered to your doorstep</p>
+    </div>
+
+    <div class="section-header">
+      <ion-label>Categories</ion-label>
+    </div>
+    <div class="category-scroll">
+      <div class="cat-chip active">All</div>
+      <div class="cat-chip">Mutton</div>
+      <div class="cat-chip">Chicken</div>
+      <div class="cat-chip">Premium</div>
+    </div>
+
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" size-md="4" size-lg="3" size-xl="2" *ngFor="let item of inventory">
+          <ion-card class="product-card">
+            <div class="img-wrapper">
+              <img *ngIf="item.imageUrl" [src]="item.imageUrl" class="product-image" alt="{{ item.name }}" />
+              <span *ngIf="!item.imageUrl" class="meat-icon">🥩</span>
+              <ion-badge color="danger" class="offer-tag" *ngIf="item.price < 500">HOT</ion-badge>
+            </div>
+            <ion-card-header>
+              <ion-card-title>{{ item.name }}</ion-card-title>
+              <ion-card-subtitle>₹{{ item.price }} / kg</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-button expand="block" shape="round" size="small" (click)="addToCart(item)">
+                ADD TO CART
+              </ion-button>
+              <ion-button fill="clear" color="danger" size="small" *ngIf="isAdmin" (click)="deleteItem(item._id)">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <div *ngIf="currentView === 'cart'" class="ion-padding fade-in">
+    <h2 class="view-title">My Shopping Cart 🛒</h2>
+    
+    <ion-list lines="none" *ngIf="cartItems.length > 0">
+      <ion-item *ngFor="let item of cartItems" class="cart-list-item">
+        <ion-thumbnail slot="start">
+          <img [src]="item.imageUrl || 'assets/placeholder.png'" alt="{{ item.name }}" />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ item.name }}</h3>
+          <p class="price-text">₹{{ item.price }} / kg</p>
+        </ion-label>
       </ion-item>
-      <ion-item fill="outline" class="ion-margin-bottom">
-        <ion-label position="floating">Price per kg</ion-label>
-        <ion-input type="number" [(ngModel)]="newItem.price"></ion-input>
-      </ion-item>
-      <ion-item fill="outline" class="ion-margin-bottom">
-        <ion-label position="floating">Image URL (Link)</ion-label>
-        <ion-input [(ngModel)]="newItem.imageUrl" placeholder="https://..."></ion-input>
-      </ion-item>
-      <ion-button expand="block" (click)="saveItem()">
-        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-        Save to MongoDB
+    </ion-list>
+
+    <div *ngIf="cartItems.length === 0" class="empty-view">
+      <ion-icon name="cart-outline"></ion-icon>
+      <p>No meats in your basket yet.</p>
+      <ion-button fill="outline" (click)="setView('home')">Go Shopping</ion-button>
+    </div>
+
+    <div class="summary-card" *ngIf="cartItems.length > 0">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>₹{{ cartTotal }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Delivery Fee</span>
+        <span class="free-text">FREE</span>
+      </div>
+      <div class="total-row">
+        <span>To Pay</span>
+        <span>₹{{ cartTotal }}</span>
+      </div>
+      <ion-button expand="block" color="success" class="checkout-btn">
+        Checkout (WhatsApp)
       </ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <div class="promo-banner">
-    <h3>Freshness Guaranteed</h3>
-    <p>Premium cuts delivered to your doorstep</p>
+    </div>
   </div>
 
-  <div class="section-header">
-    <ion-label>Categories</ion-label>
+  <div *ngIf="currentView === 'profile'" class="ion-padding fade-in">
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="avatar-bg">KW</div>
+        <h2>Khushal Warsi</h2>
+        <p>Premium Customer</p>
+      </div>
+      <ion-list lines="inset" class="profile-links">
+        <ion-item button>
+          <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>Saved Addresses</ion-label>
+        </ion-item>
+        <ion-item button>
+          <ion-icon name="receipt-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>My Orders</ion-label>
+        </ion-item>
+        <ion-item button (click)="toggleAdmin()">
+          <ion-icon name="settings-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>Admin Controls</ion-label>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" fill="clear" color="danger" class="ion-margin-top">
+        Log Out
+      </ion-button>
+    </div>
   </div>
-  <div class="category-scroll">
-    <div class="cat-chip active">All</div>
-    <div class="cat-chip">Mutton</div>
-    <div class="cat-chip">Chicken</div>
-  </div>
-
-  <div class="section-header">
-    <ion-label>Today's Fresh Cuts</ion-label>
-    <ion-button fill="clear" size="small" (click)="loadInventory()">
-      <ion-icon name="sync-outline" slot="start"></ion-icon>
-      Refresh
-    </ion-button>
-  </div>
-
-  <ion-grid>
-    <ion-row>
-      <ion-col size="6" size-md="4" size-lg="3" size-xl="2" *ngFor="let item of inventory">
-        <ion-card class="product-card">
-          <div class="img-wrapper">
-            <img *ngIf="item.imageUrl" [src]="item.imageUrl" class="product-image" alt="meat" />
-            <span *ngIf="!item.imageUrl" class="meat-icon">🥩</span>
-          </div>
-
-          <ion-card-header>
-            <ion-card-title>{{ item.name }}</ion-card-title>
-            <ion-card-subtitle>₹{{ item.price }} / kg</ion-card-subtitle>
-          </ion-card-header>
-
-          <ion-card-content>
-            <ion-button expand="block" shape="round" size="small" (click)="addToCart(item)">
-              ADD TO CART
-            </ion-button>
-            
-            <ion-button fill="clear" color="danger" size="small" *ngIf="isAdmin" (click)="deleteItem(item._id)">
-              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
 
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="home">
+    <ion-tab-button (click)="setView('home')" [selected]="currentView === 'home'">
       <ion-icon name="home"></ion-icon>
       <ion-label>Home</ion-label>
     </ion-tab-button>
-
-    <ion-tab-button tab="categories">
-      <ion-icon name="grid-outline"></ion-icon>
-      <ion-label>Menu</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="cart">
+    
+    <ion-tab-button (click)="setView('cart')" [selected]="currentView === 'cart'">
       <ion-icon name="cart-outline"></ion-icon>
       <ion-label>Cart</ion-label>
       <ion-badge color="danger" *ngIf="cartCount > 0">{{ cartCount }}</ion-badge>
     </ion-tab-button>
 
-    <ion-tab-button tab="profile">
+    <ion-tab-button (click)="setView('profile')" [selected]="currentView === 'profile'">
       <ion-icon name="person-outline"></ion-icon>
       <ion-label>Profile</ion-label>
     </ion-tab-button>
