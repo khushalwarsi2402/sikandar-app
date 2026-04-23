@@ -1,74 +1,58 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar color="primary">
-    <ion-title>
-      Bismillah Fresh Meats
-    </ion-title>
-    
+    <ion-title>Bismillah Fresh Meats</ion-title>
     <ion-buttons slot="end">
-      <ion-icon 
-        [name]="isAdmin ? 'lock-open-outline' : 'lock-closed-outline'" 
-        (click)="toggleAdmin()" 
-        class="admin-icon">
-      </ion-icon>
+      <ion-button (click)="toggleAdmin()">
+        <ion-icon [name]="isAdmin ? 'lock-open-outline' : 'lock-closed-outline'"></ion-icon>
+      </ion-button>
     </ion-buttons>
-    
+  </ion-toolbar>
+  
+  <ion-toolbar color="primary">
+    <ion-searchbar placeholder="Search for Mutton, Chicken..." class="custom-search"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding grey-background">
+<ion-content [fullscreen]="true" class="ecommerce-bg">
   
-  <ion-refresher slot="fixed" (ionRefresh)="loadInventory($event)">
-    <ion-refresher-content pullingText="Pull to refresh prices..."></ion-refresher-content>
-  </ion-refresher>
+  <div class="promo-banner">
+    <h3>Freshness Guaranteed</h3>
+    <p>Premium cuts delivered to your doorstep</p>
+    <ion-badge color="light">20% OFF FIRST ORDER</ion-badge>
+  </div>
 
-  <ion-searchbar 
-    placeholder="Search for Mutton, Chicken..." 
-    class="custom-search"
-    (ionInput)="handleSearch($event)">
-  </ion-searchbar>
+  <div class="section-header">
+    <ion-label>Categories</ion-label>
+  </div>
+  <div class="category-scroll">
+    <div class="cat-chip active">All</div>
+    <div class="cat-chip">Mutton</div>
+    <div class="cat-chip">Chicken</div>
+    <div class="cat-chip">Special Cuts</div>
+  </div>
 
-  <ion-card *ngIf="isAdmin" class="admin-card">
-    <ion-card-header>
-      <ion-card-title>Update Inventory</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item fill="outline" class="ion-margin-bottom">
-        <ion-label position="floating">Item Name</ion-label>
-        <ion-input [(ngModel)]="newItem.name" placeholder="e.g. Premium Mutton"></ion-input>
-      </ion-item>
-      <ion-item fill="outline">
-        <ion-label position="floating">Price (₹)</ion-label>
-        <ion-input type="number" [(ngModel)]="newItem.price" placeholder="750"></ion-input>
-      </ion-item>
-      <ion-button expand="block" shape="round" class="ion-margin-top" (click)="saveItem()">
-        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-        ADD NEW ITEM
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
+  <div class="section-header">
+    <ion-label>Today's Fresh Cuts</ion-label>
+    <ion-button fill="clear" size="small" (click)="loadInventory()">Refresh</ion-button>
+  </div>
 
-  <div class="section-title" *ngIf="inventory.length > 0">Today's Fresh Cuts</div>
-  
   <ion-grid>
     <ion-row>
       <ion-col size="6" *ngFor="let item of inventory">
         <ion-card class="product-card">
-          <div class="image-container">
-            <span class="meat-emoji">🥩</span>
-            <ion-badge color="danger" class="discount-badge" *ngIf="item.price < 500">OFFER</ion-badge>
+          <div class="img-wrapper">
+            <span class="meat-icon">🥩</span>
           </div>
-          
           <ion-card-header>
-            <ion-card-subtitle>₹{{ item.price }}/kg</ion-card-subtitle>
             <ion-card-title>{{ item.name }}</ion-card-title>
+            <ion-card-subtitle>₹{{ item.price }} / kg</ion-card-subtitle>
           </ion-card-header>
-
           <ion-card-content>
-            <ion-button expand="block" size="small" fill="solid" color="primary">
-              ADD
+            <ion-button expand="block" shape="round" size="small">
+              ADD TO CART
             </ion-button>
             
-            <ion-button fill="clear" color="danger" size="small" *ngIf="isAdmin" (click)="deleteItem(item._id || item.id)">
+            <ion-button fill="clear" color="danger" size="small" *ngIf="isAdmin" (click)="deleteItem(item._id)">
               <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
             </ion-button>
           </ion-card-content>
@@ -77,14 +61,28 @@
     </ion-row>
   </ion-grid>
 
-  <div *ngIf="loading" class="ion-text-center ion-padding">
-    <ion-spinner name="dots" color="primary"></ion-spinner>
-    <p>Connecting to Bismillah Fresh Meats...</p>
-  </div>
-
-  <div *ngIf="inventory.length === 0 && !loading" class="empty-state">
-    <ion-icon name="cart-outline"></ion-icon>
-    <p>No meat in stock today. Please check back later!</p>
-  </div>
-
 </ion-content>
+
+<ion-footer>
+  <ion-tabs>
+    <ion-tab-bar slot="bottom">
+      <ion-tab-button tab="home">
+        <ion-icon name="home"></ion-icon>
+        <ion-label>Home</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="categories">
+        <ion-icon name="grid-outline"></ion-icon>
+        <ion-label>Menu</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="cart">
+        <ion-icon name="cart-outline"></ion-icon>
+        <ion-label>Cart</ion-label>
+        <ion-badge color="danger">3</ion-badge>
+      </ion-tab-button>
+      <ion-tab-button tab="profile">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Profile</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-footer>

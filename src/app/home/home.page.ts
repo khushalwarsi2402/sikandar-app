@@ -16,8 +16,7 @@ import {
   cloudUploadOutline, 
   syncOutline,
   addCircleOutline,
-  cartOutline
-} from 'ionicons/icons';
+  cartOutline, home, gridOutline, personOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -43,15 +42,7 @@ export class HomePage implements OnInit {
 
   constructor(private alertCtrl: AlertController, private toastCtrl: ToastController, private http: HttpClient) {
   // Add this block inside your constructor
-  addIcons({ 
-    trashOutline, 
-    lockClosedOutline, 
-    lockOpenOutline, 
-    cloudUploadOutline, 
-    syncOutline,
-    addCircleOutline,
-    cartOutline
-  });
+  addIcons({trashOutline,home,gridOutline,cartOutline,personOutline,lockClosedOutline,lockOpenOutline,cloudUploadOutline,syncOutline,addCircleOutline});
 }
   ngOnInit() {
     this.loadInventory();
