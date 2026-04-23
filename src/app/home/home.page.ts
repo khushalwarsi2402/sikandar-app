@@ -8,15 +8,17 @@ import {
   IonCardTitle, IonCardSubtitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, 
   IonIcon, IonBadge, IonSpinner, IonButtons, IonSearchbar, IonGrid, IonRow, IonCol, 
   IonFooter, IonTabBar, IonTabButton, IonRefresher, IonRefresherContent,
-  IonList, IonThumbnail, IonAvatar
+  IonList, IonThumbnail, IonAvatar, IonSelect, IonSelectOption
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons'; 
 import { 
   trashOutline, lockClosedOutline, lockOpenOutline, cloudUploadOutline, 
   syncOutline, addCircleOutline, cartOutline, home, gridOutline, personOutline,
-  locationOutline, receiptOutline, settingsOutline
+  locationOutline, receiptOutline, settingsOutline, logoWhatsapp, paperPlaneOutline
 } from 'ionicons/icons';
 
+// --- GEOLOCATION IMPORT ---
+import { Geolocation } from '@capacitor/geolocation';
 import { CartService } from '../services/cart.service';
 
 @Component({
@@ -30,25 +32,26 @@ import { CartService } from '../services/cart.service';
     IonCardTitle, IonCardSubtitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, 
     IonIcon, IonBadge, IonSpinner, IonButtons, IonSearchbar, IonGrid, IonRow, IonCol, 
     IonFooter, IonTabBar, IonTabButton, IonRefresher, IonRefresherContent,
-    IonList, IonThumbnail, IonAvatar
+    IonList, IonThumbnail, IonAvatar, IonSelect, IonSelectOption
   ]
 })
 export class HomePage implements OnInit {
   
-  // State Management
   currentView: string = 'home'; 
   loading = false;
   isAdmin = false;
 
-  // Data Arrays
   inventory: any[] = [];
   fullInventory: any[] = []; 
   cartItems: any[] = [];
   
-  // Totals & Search
   cartCount = 0;
   cartTotal = 0;
   searchTimeout: any; 
+  selectedArea: string = "";
+  
+  // Coordinates for logistics
+  userCoords: { lat: number, lng: number } | null = null;
 
   newItem = { name: '', price: null as number | null, imageUrl: '' }; 
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
@@ -62,10 +65,10 @@ export class HomePage implements OnInit {
     addIcons({
       trashOutline, home, gridOutline, cartOutline, personOutline, 
       lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, 
-      addCircleOutline, locationOutline, receiptOutline, settingsOutline
+      addCircleOutline, locationOutline, receiptOutline, settingsOutline,
+      logoWhatsapp, paperPlaneOutline
     });
     
-    // Auto-update the badge when the service changes
     this.cartService.cartCount$.subscribe(count => {
       this.cartCount = count;
     });
@@ -75,7 +78,7 @@ export class HomePage implements OnInit {
     this.loadInventory();
   }
 
-  // --- NAVIGATION LOGIC ---
+  // --- NAVIGATION ---
   setView(view: string) {
     this.currentView = view;
     if (view === 'cart') {
@@ -84,41 +87,100 @@ export class HomePage implements OnInit {
     }
   }
 
-  // --- SEARCH LOGIC (Optimized with 400ms Debounce) ---
+  // --- GEOLOCATION ENGINE ---
+  async getLocation() {
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      this.userCoords = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      return this.userCoords;
+    } catch (e) {
+      console.warn('Geolocation failed or denied', e);
+      return null;
+    }
+  }
+
+  // --- INTEGRATED ORDER LOGIC ---
+  async placeOrder() {
+    if (this.cartItems.length === 0) {
+      this.showToast("Add some items first!");
+      return;
+    }
+
+    this.loading = true; // Show a spinner while we get the location
+    const coords = await this.getLocation();
+    this.loading = false;
+
+    // 1. Build Message Header
+    let message = `*🥩 NEW ORDER - BISMILLAH MEATS* \n`;
+    message += `Area: ${this.selectedArea || 'Local Delivery'}\n`;
+    
+    // 2. Add Location Link (The "Logistics" part)
+    if (coords) {
+      message += `📍 Location: https://www.google.com/maps?q=${coords.lat},${coords.lng}\n`;
+    }
+
+    message += `--------------------------\n`;
+    
+    // 3. Add Items
+    this.cartItems.forEach((item, index) => {
+      message += `${index + 1}. ${item.name} - ₹${item.price}\n`;
+    });
+
+    message += `--------------------------\n`;
+    message += `*Total Amount: ₹${this.cartTotal}*\n\n`;
+    message += `_Customer: Khushal Warsi_`;
+
+    // 4. Send to WhatsApp
+    const shopNumber = "91XXXXXXXXXX"; 
+    window.open(`https://wa.me/${shopNumber}?text=${encodeURIComponent(message)}`, '_blank');
+
+    // 5. Save to MongoDB for Admin Tracking
+    this.saveOrderRecord(coords);
+  }
+
+  private saveOrderRecord(coords: any) {
+    const orderData = {
+      items: this.cartItems,
+      total: this.cartTotal,
+      location: coords,
+      area: this.selectedArea,
+      status: 'Received',
+      timestamp: new Date()
+    };
+    // Send to your backend orders collection
+    this.http.post('https://sikandar-app.onrender.com/api/orders', orderData).subscribe();
+  }
+
+  // --- CART & SEARCH CORE ---
   handleSearch(event: any) {
     const query = event.target.value.toLowerCase();
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
-
     this.searchTimeout = setTimeout(() => {
-      if (query && query.trim() !== '') {
-        this.inventory = this.fullInventory.filter(item => 
-          item.name.toLowerCase().includes(query)
-        );
-      } else {
-        this.inventory = [...this.fullInventory];
-      }
+      this.inventory = query.trim() !== '' 
+        ? this.fullInventory.filter(item => item.name.toLowerCase().includes(query))
+        : [...this.fullInventory];
     }, 400); 
   }
 
-  // --- CART LOGIC ---
   addToCart(item: any) {
     this.cartService.addToCart(item);
-    this.showToast(`${item.name} added to cart!`);
+    this.showToast('Added to basket');
   }
 
   removeFromCart(index: number) {
-    if (index < 0 || index >= this.cartItems.length) return;
-    this.cartItems.splice(index, 1);
+    this.cartService.removeFromCart(index);
+    this.cartItems = this.cartService.getCart();
     this.calculateTotal();
-    this.cartCount = this.cartItems.length;
-    this.showToast('Item removed from basket');
   }
 
   calculateTotal() {
     this.cartTotal = this.cartItems.reduce((acc, item) => acc + item.price, 0);
   }
 
-  // --- API / BACKEND LOGIC ---
+  // --- API OPERATIONS ---
   loadInventory(event?: any) {
     this.loading = true;
     this.http.get<any[]>(this.apiUrl).subscribe({
@@ -129,7 +191,6 @@ export class HomePage implements OnInit {
         if (event) event.target.complete();
       },
       error: () => {
-        this.showToast('Connecting to server...');
         this.loading = false;
         if (event) event.target.complete();
       }
@@ -142,7 +203,7 @@ export class HomePage implements OnInit {
       next: () => {
         this.newItem = { name: '', price: null, imageUrl: '' };
         this.loadInventory();
-        this.showToast('Item successfully listed!');
+        this.showToast('Inventory Updated');
       }
     });
   }
@@ -153,30 +214,27 @@ export class HomePage implements OnInit {
     });
   }
 
-  // --- ADMIN & UI UTILS ---
+  // --- UTILS ---
   async toggleAdmin() {
     if (this.isAdmin) {
       this.isAdmin = false;
-      this.showToast('Inventory Locked');
       return;
     }
     const alert = await this.alertCtrl.create({
-      header: 'Admin Access',
-      backdropDismiss: false, 
-      inputs: [{ name: 'pin', type: 'password', placeholder: '****', attributes: { inputmode: 'numeric', maxlength: 4 } }],
+      header: 'Admin PIN',
+      inputs: [{ name: 'pin', type: 'password', placeholder: '****' }],
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Unlock',
-          handler: (data: any) => {
+          handler: (data) => {
             if (data.pin === '2404') {
               this.isAdmin = true;
-              this.showToast('Welcome, Admin');
+              this.showToast('Admin Mode Active');
               return true;
-            } else {
-              this.showToast('Access Denied');
-              return false; 
             }
+            this.showToast('Invalid PIN');
+            return false;
           }
         }
       ]
