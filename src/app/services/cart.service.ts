@@ -7,21 +7,31 @@ import { BehaviorSubject } from 'rxjs';
 export class CartService {
   private cartItems: any[] = [];
   
-  // A "BehaviorSubject" lets other components "watch" the cart count in real-time
+  // BehaviorSubject allows the badge to update instantly across the app
   private cartCount = new BehaviorSubject<number>(0);
   cartCount$ = this.cartCount.asObservable();
 
-  addToCart(product: any) {
-    this.cartItems.push(product);
-    this.cartCount.next(this.cartItems.length);
-    console.log("Cart updated:", this.cartItems);
-  }
+  constructor() {}
 
   getCart() {
     return this.cartItems;
   }
 
-  getTotalItems() {
-    return this.cartItems.length;
+  addToCart(product: any) {
+    this.cartItems.push(product);
+    this.cartCount.next(this.cartItems.length);
+  }
+
+  // Removes an item by its specific position in the list
+  removeFromCart(index: number) {
+    if (index > -1 && index < this.cartItems.length) {
+      this.cartItems.splice(index, 1);
+      this.cartCount.next(this.cartItems.length);
+    }
+  }
+
+  clearCart() {
+    this.cartItems = [];
+    this.cartCount.next(0);
   }
 }

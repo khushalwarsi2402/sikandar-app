@@ -7,7 +7,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, 
   IonCardTitle, IonCardSubtitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, 
   IonIcon, IonBadge, IonSpinner, IonButtons, IonSearchbar, IonGrid, IonRow, IonCol, 
-  IonFooter, IonTabs, IonTabBar, IonTabButton, IonRefresher, IonRefresherContent,
+  IonFooter, IonTabBar, IonTabButton, IonRefresher, IonRefresherContent,
   IonList, IonThumbnail, IonAvatar
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons'; 
@@ -17,7 +17,6 @@ import {
   locationOutline, receiptOutline, settingsOutline
 } from 'ionicons/icons';
 
-// Import the Service that manages the shopping cart
 import { CartService } from '../services/cart.service';
 
 @Component({
@@ -30,30 +29,28 @@ import { CartService } from '../services/cart.service';
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, 
     IonCardTitle, IonCardSubtitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, 
     IonIcon, IonBadge, IonSpinner, IonButtons, IonSearchbar, IonGrid, IonRow, IonCol, 
-    IonFooter, IonTabs, IonTabBar, IonTabButton, IonRefresher, IonRefresherContent,
+    IonFooter, IonTabBar, IonTabButton, IonRefresher, IonRefresherContent,
     IonList, IonThumbnail, IonAvatar
   ]
 })
 export class HomePage implements OnInit {
   
-  // --- View State Control ---
-  currentView: string = 'home'; // Tracks 'home', 'cart', or 'profile'
+  // State Management
+  currentView: string = 'home'; 
+  loading = false;
+  isAdmin = false;
 
-  // --- Inventory & Search Logic ---
+  // Data Arrays
   inventory: any[] = [];
   fullInventory: any[] = []; 
-  loading = false;
-  searchTimeout: any; // Used for search debouncing
-
-  // --- Cart State ---
   cartItems: any[] = [];
-  cartTotal: number = 0;
+  
+  // Totals & Search
   cartCount = 0;
+  cartTotal = 0;
+  searchTimeout: any; 
 
-  // --- Admin State ---
-  isAdmin = false; 
   newItem = { name: '', price: null as number | null, imageUrl: '' }; 
-
   private apiUrl = 'https://sikandar-app.onrender.com/api/inventory';
 
   constructor(
@@ -62,14 +59,13 @@ export class HomePage implements OnInit {
     private http: HttpClient,
     private cartService: CartService 
   ) {
-    // Register all icons used in the app
     addIcons({
       trashOutline, home, gridOutline, cartOutline, personOutline, 
       lockClosedOutline, lockOpenOutline, cloudUploadOutline, syncOutline, 
       addCircleOutline, locationOutline, receiptOutline, settingsOutline
     });
     
-    // Watch the cart service for real-time badge updates
+    // Auto-update the badge when the service changes
     this.cartService.cartCount$.subscribe(count => {
       this.cartCount = count;
     });
@@ -79,7 +75,7 @@ export class HomePage implements OnInit {
     this.loadInventory();
   }
 
-  // --- 1. VIEW NAVIGATION ---
+  // --- NAVIGATION LOGIC ---
   setView(view: string) {
     this.currentView = view;
     if (view === 'cart') {
@@ -88,11 +84,9 @@ export class HomePage implements OnInit {
     }
   }
 
-  // --- 2. SEARCH WITH DEBOUNCING (Optimization) ---
+  // --- SEARCH LOGIC (Optimized with 400ms Debounce) ---
   handleSearch(event: any) {
     const query = event.target.value.toLowerCase();
-    
-    // Clear previous timer to reset the 400ms wait
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
 
     this.searchTimeout = setTimeout(() => {
@@ -101,22 +95,30 @@ export class HomePage implements OnInit {
           item.name.toLowerCase().includes(query)
         );
       } else {
-        this.inventory = [...this.fullInventory]; // Reset if empty
+        this.inventory = [...this.fullInventory];
       }
     }, 400); 
   }
 
-  // --- 3. CART ACTIONS ---
+  // --- CART LOGIC ---
   addToCart(item: any) {
     this.cartService.addToCart(item);
     this.showToast(`${item.name} added to cart!`);
+  }
+
+  removeFromCart(index: number) {
+    if (index < 0 || index >= this.cartItems.length) return;
+    this.cartItems.splice(index, 1);
+    this.calculateTotal();
+    this.cartCount = this.cartItems.length;
+    this.showToast('Item removed from basket');
   }
 
   calculateTotal() {
     this.cartTotal = this.cartItems.reduce((acc, item) => acc + item.price, 0);
   }
 
-  // --- 4. BACKEND INTEGRATION (API) ---
+  // --- API / BACKEND LOGIC ---
   loadInventory(event?: any) {
     this.loading = true;
     this.http.get<any[]>(this.apiUrl).subscribe({
@@ -124,10 +126,10 @@ export class HomePage implements OnInit {
         this.inventory = data;
         this.fullInventory = data; 
         this.loading = false;
-        if (event) event.target.complete(); // Stop the refresher spinner
+        if (event) event.target.complete();
       },
       error: () => {
-        this.showToast('Server is sleeping. Try refreshing!');
+        this.showToast('Connecting to server...');
         this.loading = false;
         if (event) event.target.complete();
       }
@@ -138,27 +140,24 @@ export class HomePage implements OnInit {
     if (!this.newItem.name || !this.newItem.price) return;
     this.http.post(this.apiUrl, this.newItem).subscribe({
       next: () => {
-        this.newItem = { name: '', price: null, imageUrl: '' }; // Reset
+        this.newItem = { name: '', price: null, imageUrl: '' };
         this.loadInventory();
-        this.showToast('Item Added Successfully!');
+        this.showToast('Item successfully listed!');
       }
     });
   }
 
   deleteItem(id: string) {
     this.http.delete(`${this.apiUrl}/${id}`).subscribe({
-      next: () => {
-        this.loadInventory();
-        this.showToast('Item Deleted');
-      }
+      next: () => this.loadInventory()
     });
   }
 
-  // --- 5. UTILITIES ---
+  // --- ADMIN & UI UTILS ---
   async toggleAdmin() {
     if (this.isAdmin) {
       this.isAdmin = false;
-      this.showToast('Admin Mode Locked');
+      this.showToast('Inventory Locked');
       return;
     }
     const alert = await this.alertCtrl.create({
@@ -172,10 +171,10 @@ export class HomePage implements OnInit {
           handler: (data: any) => {
             if (data.pin === '2404') {
               this.isAdmin = true;
-              this.showToast('Welcome, Khushal!');
+              this.showToast('Welcome, Admin');
               return true;
             } else {
-              this.showToast('Incorrect PIN!');
+              this.showToast('Access Denied');
               return false; 
             }
           }
