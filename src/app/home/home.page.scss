@@ -122,3 +122,17 @@ hr {
     margin-top: 10px;
   }
 }
+
+ion-footer {
+  display: block !important;
+  position: relative;
+  bottom: 0;
+  z-index: 10;
+  background: white;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+ion-tab-bar {
+  --border: 0;
+  height: 65px;
+}

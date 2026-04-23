@@ -16,7 +16,8 @@ describe('HomePage (unit)', () => {
       create: jasmine.createSpy('create').and.returnValue(Promise.resolve({ present: () => Promise.resolve() })) 
     };
     const fakeHttpClient = {} as any;
-    page = new HomePage(fakeSvc, fakeToast as any, fakeHttpClient);
+    const fakePlatform = {} as any;
+    page = new HomePage(fakeSvc, fakeToast as any, fakeHttpClient, fakePlatform);
     page.inventory = [];
   });
 
