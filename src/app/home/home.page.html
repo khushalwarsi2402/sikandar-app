@@ -18,7 +18,6 @@
   <div class="promo-banner">
     <h3>Freshness Guaranteed</h3>
     <p>Premium cuts delivered to your doorstep</p>
-    <ion-badge color="light">20% OFF FIRST ORDER</ion-badge>
   </div>
 
   <div class="section-header">
@@ -27,8 +26,6 @@
   <div class="category-scroll">
     <div class="cat-chip active">All</div>
     <div class="cat-chip">Mutton</div>
-    <div class="cat-chip">Chicken</div>
-    <div class="cat-chip">Special Cuts</div>
   </div>
 
   <div class="section-header">
@@ -38,7 +35,7 @@
 
   <ion-grid>
     <ion-row>
-      <ion-col size="6" *ngFor="let item of inventory">
+      <ion-col size="6" size-md="4" size-lg="3" size-xl="2" *ngFor="let item of inventory">
         <ion-card class="product-card">
           <div class="img-wrapper">
             <span class="meat-icon">🥩</span>

@@ -99,3 +99,26 @@ hr {
   ion-card-title { font-size: 1rem; font-weight: bold; color: #333; }
   ion-card-subtitle { color: #e52d27; font-weight: bold; }
 }
+
+/* --- RESPONSIVE DESKTOP LAYOUT --- */
+@media (min-width: 768px) {
+  
+  /* Center the main content and set a max width */
+  ion-content::part(scroll) {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 20px;
+  }
+
+  /* Make the header elements match the centered width */
+  ion-toolbar {
+    --padding-start: calc(50vw - 600px);
+    --padding-end: calc(50vw - 600px);
+  }
+
+  /* Fix the banner so it doesn't touch the edges on PC */
+  .promo-banner {
+    border-radius: 20px; /* Round all corners on PC */
+    margin-top: 10px;
+  }
+}
