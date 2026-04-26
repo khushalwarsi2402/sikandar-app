@@ -30,3 +30,5 @@ Thumbs.db
 
 # Ignore nested git directories if present
 frontend-app/.git
+
+.fake
