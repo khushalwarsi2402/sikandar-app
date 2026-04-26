@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Sikandar Raw Mutton — Fresh mutton delivery. Full Fresh Full Taza. Order dry and wet mutton online.">
+  <title>Sikandar Raw Mutton — Full Fresh </title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body>
+
+  <!-- Background Ambiance -->
+  <div class="bg-ambiance"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="nav-brand" onclick="showShop(); return false;">
+      <div class="nav-logo">S.R.M</div>
+      <span class="nav-brand-text">Sikandar Raw Mutton</span>
+    </a>
+    <div class="nav-actions">
+      <button class="nav-btn" id="profile-toggle" onclick="toggleProfile()" aria-label="Profile" title="My Profile">
+        <span class="nav-avatar" id="nav-avatar">👤</span>
+      </button>
+      <button class="nav-btn" id="orders-toggle" onclick="toggleOrderHistory()" aria-label="Order history"
+        title="My Orders">
+        📋
+      </button>
+      <button class="nav-btn" id="cart-toggle" onclick="toggleCart()" aria-label="Open cart">
+        🛒
+        <span class="cart-badge" id="cart-badge"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="main-content" id="main-content">
+
+    <!-- Hero -->
+    <section class="hero" id="hero">
+      <div class="hero-bg-image"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Open Now · Delivering Fresh
+        </div>
+        <h1><span class="highlight">Sikandar</span> Mutton</h1>
+        <p class="hero-tagline">Full Fresh</p>
+        <p class="hero-sub">Premium quality mutton delivered straight from our butcher shop to your doorstep.</p>
+        <a href="#products" class="hero-cta">
+          🥩 Order Now
+        </a>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="section" id="products">
+      <div class="section-header">
+        <h2>Our Products</h2>
+        <p>Select your favourite cut — fresh from the shop every day</p>
+      </div>
+
+      <!-- Category Chips -->
+      <div class="categories" id="categories">
+        <button class="chip active" data-category="all" onclick="filterCategory('all', this)">
+          <span class="chip-icon">🥩</span> All
+        </button>
+        <button class="chip" data-category="dry" onclick="filterCategory('dry', this)">
+          <span class="chip-icon">🔥</span> Dry Mutton
+        </button>
+        <button class="chip" data-category="wet" onclick="filterCategory('wet', this)">
+          <span class="chip-icon">💧</span> Wet Mutton
+        </button>
+      </div>
+
+      <!-- Product Cards -->
+      <div class="products-grid" id="products-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-brand">Sikandar Raw Mutton</div>
+      <p class="footer-tagline">✨ Full Fresh ✨</p>
+      <div class="footer-info">
+        <p><a href="https://maps.app.goo.gl/xCMgFaHpiqprPzXXA" target="_blank" rel="noopener"
+            style="color: var(--text-muted); text-decoration: none;">📍 Donar Gaumti, Dilwarpur, Darbhanga, Bihar</a>
+        </p>
+        <p>🕐 Open Daily · 7:00 AM TO 12:30 PM - 4:00 PM TO 9:00 PM</p>
+      </div>
+      <p class="footer-copy">© 2026 Sikandar Raw Mutton. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <!-- ========== ORDER TRACKING ========== -->
+  <section class="tracking-section" id="tracking-section">
+    <div class="tracking-card">
+      <p class="tracking-title">🥩 Order Placed!</p>
+      <p class="tracking-order-id" id="tracking-order-id">Order #SM-000000</p>
+
+      <div class="tracking-steps" id="tracking-steps">
+        <div class="tracking-step" data-step="0">
+          <div class="step-dot">✓</div>
+          <p class="step-title">Order Confirmed</p>
+          <p class="step-time" id="step-time-0">--</p>
+        </div>
+        <div class="tracking-step" data-step="1">
+          <div class="step-dot">✓</div>
+          <p class="step-title">Preparing Your Order</p>
+          <p class="step-time" id="step-time-1">--</p>
+        </div>
+        <div class="tracking-step" data-step="2">
+          <div class="step-dot">✓</div>
+          <p class="step-title">Out for Delivery</p>
+          <p class="step-time" id="step-time-2">--</p>
+        </div>
+        <div class="tracking-step" data-step="3">
+          <div class="step-dot">✓</div>
+          <p class="step-title">Delivered</p>
+          <p class="step-time" id="step-time-3">--</p>
+        </div>
+      </div>
+
+      <!-- Delivery Map -->
+      <div class="tracking-map-container">
+        <div class="tracking-map-header">
+          <span class="map-icon">🗺️</span>
+          <span>Live Delivery Map</span>
+          <span class="map-status-pill" id="map-status-pill">Locating...</span>
+        </div>
+        <div id="tracking-map" class="tracking-map"></div>
+        <div class="map-legend">
+          <span class="legend-item"><span class="legend-dot legend-shop"></span> Shop</span>
+          <span class="legend-item"><span class="legend-dot legend-rider"></span> Rider</span>
+          <span class="legend-item"><span class="legend-dot legend-dest"></span> Your Location</span>
+        </div>
+      </div>
+
+      <div class="tracking-summary" id="tracking-summary">
+        <!-- Rendered by JS -->
+      </div>
+
+      <button class="back-to-shop-btn" onclick="showShop()">
+        ← Back to Shop
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== ORDER HISTORY ========== -->
+  <section class="order-history-section" id="order-history-section">
+    <div class="section-header">
+      <h2>📋 My Orders</h2>
+      <p>Track and manage your recent orders</p>
+    </div>
+    <div class="order-history-list" id="order-history-list">
+      <!-- Rendered by JS -->
+    </div>
+    <button class="back-to-shop-btn" onclick="showShop()" style="max-width:700px; margin: 24px auto 0; display:flex;">
+      ← Back to Shop
+    </button>
+  </section>
+
+  <!-- ========== USER PROFILE ========== -->
+  <section class="profile-section" id="profile-section">
+    <div class="profile-card">
+
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profile-avatar">👤</div>
+          <button class="profile-avatar-edit" onclick="changeAvatar()" title="Change avatar">✏️</button>
+        </div>
+        <h2 class="profile-name" id="profile-display-name">Guest User</h2>
+        <p class="profile-phone" id="profile-display-phone">No phone added</p>
+        <p class="profile-member-since">🎖️ Member since March 2026</p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="profile-stats">
+        <div class="stat-card">
+          <span class="stat-number" id="stat-total-orders">0</span>
+          <span class="stat-label">Orders</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="stat-total-spent">₹0</span>
+          <span class="stat-label">Total Spent</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="stat-fav-item">—</span>
+          <span class="stat-label">Favourite</span>
+        </div>
+      </div>
+
+      <!-- Profile Menu -->
+      <div class="profile-menu">
+
+        <!-- Personal Info -->
+        <div class="profile-menu-section">
+          <h4 class="profile-section-title">👤 Personal Information</h4>
+          <div class="profile-form" id="profile-form">
+            <div class="form-group">
+              <label for="profile-name">Full Name</label>
+              <input type="text" id="profile-name" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+              <label for="profile-email">Email</label>
+              <input type="email" id="profile-email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+              <label for="profile-phone">Phone</label>
+              <input type="tel" id="profile-phone" placeholder="10-digit mobile number" maxlength="10">
+            </div>
+            <div class="form-group">
+              <label for="profile-dob">Date of Birth</label>
+              <input type="date" id="profile-dob">
+            </div>
+            <button class="profile-save-btn" onclick="saveProfile()">💾 Save Changes</button>
+          </div>
+        </div>
+
+        <!-- Saved Addresses -->
+        <div class="profile-menu-section">
+          <h4 class="profile-section-title">📍 Saved Addresses</h4>
+          <div class="profile-addresses" id="profile-addresses">
+            <!-- Rendered by JS -->
+          </div>
+          <button class="profile-add-btn" onclick="addNewAddress()">+ Add New Address</button>
+        </div>
+
+        <!-- Saved Payment Methods -->
+        <div class="profile-menu-section">
+          <h4 class="profile-section-title">💳 Payment Methods</h4>
+          <div class="profile-payments" id="profile-payments">
+            <!-- Rendered by JS -->
+          </div>
+          <button class="profile-add-btn" onclick="addNewPayment()">+ Add Payment Method</button>
+        </div>
+
+        <!-- Preferences -->
+        <div class="profile-menu-section">
+          <h4 class="profile-section-title">⚙️ Preferences</h4>
+          <div class="profile-preferences">
+            <div class="pref-item">
+              <div class="pref-info">
+                <span class="pref-label">🔔 Push Notifications</span>
+                <span class="pref-desc">Order updates & offers</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pref-notifications" checked onchange="savePreferences()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="pref-item">
+              <div class="pref-info">
+                <span class="pref-label">📧 Email Updates</span>
+                <span class="pref-desc">Newsletters & promotions</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pref-emails" onchange="savePreferences()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="pref-item">
+              <div class="pref-info">
+                <span class="pref-label">🌙 Dark Mode</span>
+                <span class="pref-desc">Follow system theme</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pref-darkmode" checked onchange="toggleThemeOverride(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="pref-item">
+              <div class="pref-info">
+                <span class="pref-label">🌐 Language</span>
+                <span class="pref-desc">App display language</span>
+              </div>
+              <select class="pref-select" id="pref-language" onchange="savePreferences()">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="mai">मैथिली</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="profile-menu-section">
+          <h4 class="profile-section-title">📌 Quick Links</h4>
+          <div class="profile-links">
+            <button class="profile-link-btn" onclick="toggleOrderHistory()">
+              <span>📋</span> My Orders
+              <span class="link-arrow">→</span>
+            </button>
+            <button class="profile-link-btn" onclick="showToast('📞 Contact us at +91 9876543210')">
+              <span>🆘</span> Help & Support
+              <span class="link-arrow">→</span>
+            </button>
+            <button class="profile-link-btn" onclick="showToast('📄 Terms & Conditions — Coming Soon')">
+              <span>📄</span> Terms & Conditions
+              <span class="link-arrow">→</span>
+            </button>
+            <button class="profile-link-btn" onclick="showToast('🔒 Privacy Policy — Coming Soon')">
+              <span>🔒</span> Privacy Policy
+              <span class="link-arrow">→</span>
+            </button>
+            <button class="profile-link-btn" onclick="showToast('ℹ️ Sikandar Raw Mutton v1.0 — Made with ❤️ in Darbhanga')">
+              <span>ℹ️</span> About Us
+              <span class="link-arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="profile-menu-section">
+          <button class="profile-logout-btn" onclick="logoutUser()">
+            🚪 Log Out
+          </button>
+          <button class="profile-delete-btn" onclick="deleteAccount()">
+            🗑️ Delete Account
+          </button>
+        </div>
+
+      </div>
+
+      <button class="back-to-shop-btn" onclick="showShop()">
+        ← Back to Shop
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== PAYMENT MODAL ========== -->
+  <div class="payment-overlay" id="payment-overlay" onclick="closePaymentModal()"></div>
+  <div class="payment-modal" id="payment-modal">
+    <!-- Confetti container (behind glass) -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    <!-- Glow layer (behind glass) -->
+    <div class="payment-glow-layer"></div>
+
+    <!-- Frosted glass frame -->
+    <div class="payment-glass-frame">
+
+      <!-- Main content -->
+      <div class="payment-content" id="payment-content">
+        <div class="payment-modal-header">
+          <h3>💳 Checkout</h3>
+          <button class="payment-close" onclick="closePaymentModal()">✕</button>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="payment-summary-section">
+          <h4>Order Summary</h4>
+          <div id="payment-items">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Customer Details -->
+        <form id="payment-form" onsubmit="event.preventDefault()">
+          <div class="payment-form-section">
+            <h4>📦 Delivery Details</h4>
+            <div class="form-group">
+              <label for="pay-name">Full Name</label>
+              <input type="text" id="pay-name" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="pay-phone">Phone</label>
+                <input type="tel" id="pay-phone" placeholder="10-digit number" maxlength="10" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="pay-address">Delivery Address</label>
+              <textarea id="pay-address" placeholder="Full delivery address" rows="2" required></textarea>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="payment-form-section">
+            <h4>💰 Payment Method</h4>
+            <div class="payment-methods">
+              <button type="button" class="pay-method-btn active" data-method="card"
+                onclick="selectPaymentMethod('card')">
+                <div class="pay-method-icon">💳</div>
+                <span>Credit Card</span>
+              </button>
+              <button type="button" class="pay-method-btn" data-method="paypal"
+                onclick="selectPaymentMethod('paypal')">
+                <div class="pay-method-icon">🅿️</div>
+                <span>PayPal</span>
+              </button>
+              <button type="button" class="pay-method-btn" data-method="upi" onclick="selectPaymentMethod('upi')">
+                <div class="pay-method-icon">📱</div>
+                <span>UPI</span>
+              </button>
+            </div>
+
+            <!-- Credit Card Fields -->
+            <div id="card-fields" class="method-fields">
+              <div class="credit-card-visual">
+                <div class="card-chip">
+                  <div class="card-chip-lines"></div>
+                </div>
+                <div class="card-number-display" id="card-visual-number">•••• •••• •••• ••••</div>
+                <div class="card-bottom">
+                  <div>
+                    <span class="card-label-small">CARD HOLDER</span>
+                    <span class="card-holder-display" id="card-visual-name">YOUR NAME</span>
+                  </div>
+                  <div>
+                    <span class="card-label-small">EXPIRES</span>
+                    <span class="card-expiry-display" id="card-visual-expiry">MM/YY</span>
+                  </div>
+                </div>
+                <div class="card-brand-icon">VISA</div>
+              </div>
+              <div class="form-group">
+                <label for="card-number">Card Number</label>
+                <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19"
+                  oninput="formatCardNumber(this); document.getElementById('card-visual-number').textContent = this.value || '•••• •••• •••• ••••';">
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="card-expiry">Expiry</label>
+                  <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5"
+                    oninput="formatExpiry(this); document.getElementById('card-visual-expiry').textContent = this.value || 'MM/YY';">
+                </div>
+                <div class="form-group">
+                  <label for="card-cvv">CVV</label>
+                  <input type="password" id="card-cvv" placeholder="•••" maxlength="4">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="card-holder">Cardholder Name</label>
+                <input type="text" id="card-holder" placeholder="Name on card"
+                  oninput="document.getElementById('card-visual-name').textContent = this.value.toUpperCase() || 'YOUR NAME';">
+              </div>
+            </div>
+
+            <!-- PayPal Fields -->
+            <div id="paypal-fields" class="method-fields" style="display:none;">
+              <div class="paypal-visual">
+                <div class="paypal-logo">
+                  <span class="paypal-p1">Pay</span><span class="paypal-p2">Pal</span>
+                </div>
+                <p class="paypal-desc">You will be redirected to PayPal to complete payment securely.</p>
+                <div class="paypal-amount">
+                  <span>Total Amount</span>
+                  <span class="paypal-total" id="payment-total-display">₹0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- UPI Fields -->
+            <div id="upi-fields" class="method-fields" style="display:none;">
+              <div class="upi-visual">
+                <div class="upi-qr-area">
+                  <div class="upi-qr-frame">
+                    <div class="upi-qr-pattern">
+                      <!-- Decorative QR pattern -->
+                      <div class="qr-dot" style="top:10%;left:10%"></div>
+                      <div class="qr-dot" style="top:10%;left:30%"></div>
+                      <div class="qr-dot" style="top:10%;left:70%"></div>
+                      <div class="qr-dot" style="top:10%;left:90%"></div>
+                      <div class="qr-dot" style="top:30%;left:10%"></div>
+                      <div class="qr-dot" style="top:30%;left:50%"></div>
+                      <div class="qr-dot" style="top:30%;left:90%"></div>
+                      <div class="qr-dot" style="top:50%;left:30%"></div>
+                      <div class="qr-dot" style="top:50%;left:50%"></div>
+                      <div class="qr-dot" style="top:50%;left:70%"></div>
+                      <div class="qr-dot" style="top:70%;left:10%"></div>
+                      <div class="qr-dot" style="top:70%;left:50%"></div>
+                      <div class="qr-dot" style="top:70%;left:90%"></div>
+                      <div class="qr-dot" style="top:90%;left:10%"></div>
+                      <div class="qr-dot" style="top:90%;left:30%"></div>
+                      <div class="qr-dot" style="top:90%;left:70%"></div>
+                      <div class="qr-dot" style="top:90%;left:90%"></div>
+                    </div>
+                    <div class="upi-qr-center">📱</div>
+                  </div>
+                  <p class="upi-scan-text">Scan QR to Pay</p>
+                </div>
+                <div class="upi-divider">
+                  <span>OR</span>
+                </div>
+                <div class="form-group">
+                  <label for="upi-id">UPI ID</label>
+                  <input type="text" id="upi-id" placeholder="yourname@paytm">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pay Button -->
+          <button type="button" class="confirm-payment-btn" onclick="confirmPayment()">
+            <span class="pay-btn-text">Confirm & Pay</span>
+            <span class="pay-btn-amount" id="pay-btn-total"></span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Processing State -->
+      <div class="payment-processing" id="payment-processing">
+        <div class="processing-orbit">
+          <div class="orbit-ring"></div>
+          <div class="orbit-dot"></div>
+        </div>
+        <p class="processing-text">Processing Payment...</p>
+        <p class="processing-sub">Please wait while we confirm your transaction</p>
+      </div>
+
+      <!-- Success State -->
+      <div class="payment-success" id="payment-success">
+        <div class="success-checkmark-container">
+          <div class="success-checkmark-bg"></div>
+          <div class="success-checkmark">✓</div>
+        </div>
+        <h3 class="success-title">Payment Successful!</h3>
+        <p class="success-order-id" id="success-order-id"></p>
+        <p class="success-sub">Your order has been confirmed and is being prepared.</p>
+        <button class="success-track-btn" onclick="goToTracking()">
+          📍 Track My Order
+        </button>
+        <button class="success-shop-btn" onclick="closePaymentModal(); showShop();">
+          ← Continue Shopping
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CART SIDEBAR ========== -->
+  <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+  <aside class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-header">
+      <h3>🛒 Your Cart</h3>
+      <button class="cart-close" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cart-items">
+      <!-- Rendered by JS -->
+    </div>
+    <div class="cart-footer" id="cart-footer">
+      <div class="cart-totals" id="cart-totals">
+        <!-- Rendered by JS -->
+      </div>
+      <button class="checkout-btn" id="checkout-btn" onclick="placeOrder()" disabled>
+        Place Order 🚚
+      </button>
+    </div>
+  </aside>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
