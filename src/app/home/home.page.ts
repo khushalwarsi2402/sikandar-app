@@ -87,15 +87,23 @@ export class HomePage implements OnInit {
     }
   }
 
-  // --- GEOLOCATION ENGINE ---
+  // --- GEOLOCATION ENGINE (WITH FAIL-SAFE TIMEOUT) ---
   async getLocation() {
     try {
-      const position = await Geolocation.getCurrentPosition();
-      this.userCoords = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-      return this.userCoords;
+      // Race condition: Wait max 4 seconds for GPS, otherwise move on to WhatsApp
+      const locationPromise = Geolocation.getCurrentPosition();
+      const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 4000));
+      
+      const position: any = await Promise.race([locationPromise, timeoutPromise]);
+      
+      if (position && position.coords) {
+        this.userCoords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        return this.userCoords;
+      }
+      return null;
     } catch (e) {
       console.warn('Geolocation failed or denied', e);
       return null;
@@ -109,7 +117,9 @@ export class HomePage implements OnInit {
       return;
     }
 
-    this.loading = true; // Show a spinner while we get the location
+    this.showToast("Preparing order..."); 
+    
+    this.loading = true; 
     const coords = await this.getLocation();
     this.loading = false;
 
@@ -117,9 +127,11 @@ export class HomePage implements OnInit {
     let message = `*🥩 NEW ORDER - BISMILLAH MEATS* \n`;
     message += `Area: ${this.selectedArea || 'Local Delivery'}\n`;
     
-    // 2. Add Location Link (The "Logistics" part)
+    // 2. Add Location Link (Fixed Google Maps URL)
     if (coords) {
-      message += `📍 Location: https://www.google.com/maps?q=${coords.lat},${coords.lng}\n`;
+      message += `📍 Location: https://maps.google.com/?q=${coords.lat},${coords.lng}\n`;
+    } else {
+      message += `📍 Location: (Not Provided)\n`;
     }
 
     message += `--------------------------\n`;
@@ -133,9 +145,12 @@ export class HomePage implements OnInit {
     message += `*Total Amount: ₹${this.cartTotal}*\n\n`;
     message += `_Customer: Khushal Warsi_`;
 
-    // 4. Send to WhatsApp
-    const shopNumber = "91XXXXXXXXXX"; 
-    window.open(`https://wa.me/${shopNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    // 4. Send to WhatsApp (THE BYPASS FIX)
+    const shopNumber = "91XXXXXXXXXX"; // ⚠️ REPLACE WITH YOUR REAL 10-DIGIT NUMBER
+    const whatsappUrl = `https://wa.me/${shopNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Instead of window.open, this forces the current tab to redirect, bypassing pop-up blockers!
+    window.location.href = whatsappUrl; 
 
     // 5. Save to MongoDB for Admin Tracking
     this.saveOrderRecord(coords);
