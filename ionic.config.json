@@ -1,0 +1,7 @@
+{
+  "name": "bismillah-fresh-meats",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
